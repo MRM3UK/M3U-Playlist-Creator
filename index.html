@@ -6,12 +6,11 @@
   <title>EXTM3U Playlist Creator</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background: #f8fafc; font-family: 'Segoe UI', sans-serif; }
-    .channel-box { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-    textarea { width: 100%; height: 200px; margin-top: 10px; font-family: monospace; }
-    .input-label { font-weight: 500; margin-bottom: 3px; }
-    .mini-preview { font-size: 14px; color: #555; padding: 6px; margin-bottom: 10px; background: #eef2f7; border-radius: 5px; }
-    .footer { margin-top: 20px; text-align: center; font-size: 13px; color: gray; }
+    body { background: #f9fafb; font-family: 'Segoe UI', sans-serif; }
+    .channel-input { margin-bottom: 15px; }
+    .preview-box { background: #fff; border: 1px solid #ccc; padding: 10px; border-radius: 8px; margin-top: 10px; display: flex; align-items: center; gap: 10px; }
+    .preview-box img { height: 30px; width: 30px; object-fit: contain; border-radius: 5px; }
+    textarea { width: 100%; height: 200px; margin-top: 20px; font-family: monospace; }
   </style>
 </head>
 <body>
@@ -19,22 +18,25 @@
     <h3 class="text-center mb-4">📺 EXTM3U Playlist Creator</h3>
 
     <div class="mb-3">
-      <label class="input-label">🖼️ Logo URL (applies to all channels automatically)</label>
-      <input id="logoAll" type="text" class="form-control" placeholder="https://image.tmdb.org/logo.png" oninput="autoApplyLogoAll()"/>
+      <label class="form-label">🖼️ Logo URL (used for all channels)</label>
+      <input type="text" id="logoAll" class="form-control" placeholder="https://example.com/logo.png" oninput="updatePreviewLogos()" />
     </div>
 
-    <div class="d-flex gap-2 flex-wrap mb-3">
+    <div id="channelForm" class="mb-4">
+      <!-- Channel input fields -->
+    </div>
+
+    <div class="d-flex gap-2 mb-4 flex-wrap">
       <button class="btn btn-success" onclick="addChannel()">+ Add Channel</button>
       <button class="btn btn-info" onclick="generateM3U()">🎯 Generate</button>
       <button class="btn btn-dark" onclick="downloadM3U()">⬇ Download</button>
     </div>
 
-    <div id="channels" class="mb-4"></div>
+    <h5>📋 Playlist Preview</h5>
+    <div id="previewList"></div>
 
-    <h5>📋 Generated M3U</h5>
-    <textarea id="output" readonly placeholder="Your playlist will appear here..."></textarea>
-
-    <div class="footer">Developed with ❤️ — Mobile Optimized</div>
+    <h5 class="mt-4">📄 M3U Output</h5>
+    <textarea id="output" readonly></textarea>
   </div>
 
   <script>
@@ -42,40 +44,37 @@
 
     function addChannel() {
       const index = channels.length;
-      const logo = document.getElementById("logoAll").value;
-      const channel = { name: "", url: "", logo, group: "" };
-      channels.push(channel);
+      channels.push({ name: "", url: "", logo: "" });
 
-      const div = document.createElement("div");
-      div.className = "channel-box";
-      div.innerHTML = `
-        <div class="row">
-          <div class="col-md-6 mb-2">
-            <label class="input-label">📺 Channel Name</label>
-            <input class="form-control" placeholder="Enter name" oninput="channels[${index}].name=this.value" />
-          </div>
-          <div class="col-md-6 mb-2">
-            <label class="input-label">🔗 Stream URL</label>
-            <input class="form-control" placeholder="http://..." oninput="channels[${index}].url=this.value" />
-          </div>
-          <div class="col-md-6 mb-2">
-            <label class="input-label">📁 Group Title</label>
-            <input class="form-control" placeholder="Movies, Sports..." oninput="channels[${index}].group=this.value" />
-          </div>
-        </div>
-        <div class="mini-preview">
-          🖼️ Logo: <code>${logo}</code>
-        </div>
+      const formDiv = document.createElement("div");
+      formDiv.className = "channel-input";
+      formDiv.innerHTML = `
+        <input class="form-control mb-2" placeholder="📺 Channel Name" oninput="channels[${index}].name=this.value; updatePreview()" />
+        <input class="form-control" placeholder="🔗 Stream URL" oninput="channels[${index}].url=this.value; updatePreview()" />
       `;
-      document.getElementById("channels").appendChild(div);
+      document.getElementById("channelForm").appendChild(formDiv);
+      updatePreview();
     }
 
-    function autoApplyLogoAll() {
-      const newLogo = document.getElementById("logoAll").value;
-      channels.forEach((ch, i) => {
-        ch.logo = newLogo;
-        const preview = document.querySelectorAll(".mini-preview")[i];
-        if (preview) preview.innerHTML = `🖼️ Logo: <code>${newLogo}</code>`;
+    function updatePreviewLogos() {
+      const logo = document.getElementById("logoAll").value;
+      channels.forEach(ch => ch.logo = logo);
+      updatePreview();
+    }
+
+    function updatePreview() {
+      const logo = document.getElementById("logoAll").value;
+      const container = document.getElementById("previewList");
+      container.innerHTML = "";
+      channels.forEach((ch, index) => {
+        if (logo) ch.logo = logo;
+        const div = document.createElement("div");
+        div.className = "preview-box";
+        div.innerHTML = `
+          <img src="${ch.logo}" alt="Logo"/>
+          <strong>${ch.name || '(Unnamed)'}</strong>
+        `;
+        container.appendChild(div);
       });
     }
 
@@ -83,7 +82,7 @@
       let output = "#EXTM3U\n";
       channels.forEach(ch => {
         if (ch.name && ch.url) {
-          output += `#EXTINF:-1 tvg-logo="${ch.logo}" group-title="${ch.group}",${ch.name}\n${ch.url}\n`;
+          output += `#EXTINF:-1 tvg-logo="${ch.logo}" group-title="",${ch.name}\n${ch.url}\n`;
         }
       });
       document.getElementById("output").value = output;
@@ -98,7 +97,7 @@
       a.click();
     }
 
-    // Add first channel on page load
+    // Load one input at first
     addChannel();
   </script>
 </body>
