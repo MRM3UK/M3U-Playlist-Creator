@@ -48,7 +48,8 @@
       outline: none;
       border-color: #64b5f6; /* হালকা নীল ফোকাস */
       box-shadow: 0 0 5px rgba(100, 181, 246, 0.5);
-      background-color: #333;
+      background-color: #383838; /* ফোকাসে কিছুটা গাঢ় ব্যাকগ্রাউন্ড */
+      color: #ffffff; /* ফোকাসে সাদা লেখা */
     }
     .btn {
       padding: 12px 25px;
@@ -134,6 +135,13 @@
       padding: 18px;
       border: 1px solid #444;
       resize: vertical;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #64b5f6;
+      box-shadow: 0 0 5px rgba(100, 181, 246, 0.5);
+      background-color: #383838;
+      color: #ffffff;
     }
     h5 {
         color: #bdbdbd;
@@ -255,7 +263,8 @@
     .save-playlist-group input:focus {
         border-color: #64b5f6;
         box-shadow: 0 0 5px rgba(100, 181, 246, 0.5);
-        background-color: #333;
+        background-color: #383838;
+        color: #ffffff;
     }
   </style>
 </head>
@@ -320,10 +329,22 @@
 
     const CURRENT_PLAYLIST_KEY = 'currentM3UChannels';
     const SAVED_PLAYLISTS_KEY = 'savedM3UPlaylists';
+    const AUTO_SAVE_PLAYLIST_NAME = "Auto Saved Session"; // ডিফল্ট অটো-সেভ প্লেলিস্টের নাম
 
     // --- Local Storage Functions ---
     function saveCurrentChannels() {
       localStorage.setItem(CURRENT_PLAYLIST_KEY, JSON.stringify(currentChannels));
+      // যখনই currentChannels আপডেট হবে, তখনই এটি auto-save playlist এও সেভ হবে।
+      if (currentChannels.length > 0) { // শুধু যদি কোন চ্যানেল থাকে তাহলেই সেভ হবে
+        savedPlaylists[AUTO_SAVE_PLAYLIST_NAME] = [...currentChannels];
+        savePlaylistsToLocalStorage();
+      } else { // যদি currentChannels খালি হয়ে যায়, auto-save playlist থেকে এটি মুছে ফেলা হবে
+        if (savedPlaylists[AUTO_SAVE_PLAYLIST_NAME]) {
+          delete savedPlaylists[AUTO_SAVE_PLAYLIST_NAME];
+          savePlaylistsToLocalStorage();
+        }
+      }
+      renderSavedPlaylistsDropdown(); // সেভড প্লেলিস্ট ড্রপডাউন আপডেট করা
     }
 
     function loadCurrentChannels() {
@@ -383,7 +404,7 @@
       const finalLogo = customLogo || globalLogo || "https://via.placeholder.com/30";
 
       currentChannels.push({ name, url, logo: finalLogo });
-      saveCurrentChannels();
+      saveCurrentChannels(); // এখানে অটো-সেভ ট্রিগার হবে
       renderCurrentChannels();
 
       // Clear inputs
@@ -394,14 +415,14 @@
 
     function removeChannel(index) {
       currentChannels.splice(index, 1);
-      saveCurrentChannels();
+      saveCurrentChannels(); // এখানে অটো-সেভ ট্রিগার হবে
       renderCurrentChannels();
     }
 
     function clearCurrentChannels() {
       if (confirm("Are you sure you want to clear all channels from the current playlist?")) {
         currentChannels = [];
-        saveCurrentChannels();
+        saveCurrentChannels(); // এখানে অটো-সেভ ট্রিগার হবে (প্লেলিস্ট খালি হবে)
         renderCurrentChannels();
       }
     }
@@ -440,7 +461,12 @@
     function renderSavedPlaylistsDropdown() {
         const dropdownContent = document.getElementById("savedPlaylistsDropdown");
         dropdownContent.innerHTML = "";
-        const playlistNames = Object.keys(savedPlaylists);
+        const playlistNames = Object.keys(savedPlaylists).sort((a, b) => {
+            // "Auto Saved Session" কে সবার উপরে রাখবে
+            if (a === AUTO_SAVE_PLAYLIST_NAME) return -1;
+            if (b === AUTO_SAVE_PLAYLIST_NAME) return 1;
+            return a.localeCompare(b); // বাকিগুলো বর্ণানুক্রমিক ভাবে
+        });
         document.getElementById('savedPlaylistsCount').textContent = `(${playlistNames.length})`;
 
         if (playlistNames.length === 0) {
@@ -451,7 +477,7 @@
                 itemDiv.className = "dropdown-item-actions";
                 itemDiv.innerHTML = `
                     <span class="playlist-name-text" onclick="loadSavedPlaylist('${name}')">${name}</span>
-                    <button class="delete-playlist-btn" onclick="deleteSavedPlaylist('${name}', event)">✖</button>
+                    ${name !== AUTO_SAVE_PLAYLIST_NAME ? `<button class="delete-playlist-btn" onclick="deleteSavedPlaylist('${name}', event)">✖</button>` : ''}
                 `;
                 dropdownContent.appendChild(itemDiv);
             });
@@ -491,17 +517,24 @@
     }
 
     function loadSavedPlaylist(name) {
-        if (confirm(`Loading "${name}" will replace your current playlist. Continue?`)) {
+        // যদি লোড করা প্লেলিস্টটি Auto Saved Session হয়, তাহলে নিশ্চিতকরণ বার্তা বাদ দেওয়া যেতে পারে
+        if (name === AUTO_SAVE_PLAYLIST_NAME || confirm(`Loading "${name}" will replace your current playlist. Continue?`)) {
             currentChannels = [...savedPlaylists?.[name] || []]; // Load a copy
             saveCurrentChannels(); // Save the newly loaded playlist as current
             renderCurrentChannels();
             toggleSavedPlaylistsDropdown(); // Close dropdown
-            alert(`Playlist "${name}" loaded.`);
+            if (name !== AUTO_SAVE_PLAYLIST_NAME) { // Auto Saved Session লোড হলে বার্তা না দেখানো
+                alert(`Playlist "${name}" loaded.`);
+            }
         }
     }
 
     function deleteSavedPlaylist(name, event) {
         event.stopPropagation(); // Prevent loading the playlist when deleting
+        if (name === AUTO_SAVE_PLAYLIST_NAME) {
+          alert("The 'Auto Saved Session' playlist cannot be manually deleted.");
+          return;
+        }
         if (confirm(`Are you sure you want to delete the playlist "${name}"? This action cannot be undone.`)) {
             const {[name]: deleted, ...rest} = savedPlaylists; // Remove the playlist
             savedPlaylists = rest;
