@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EXTM3U Playlist Creator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #1f2937;
+      color: white;
+      padding: 20px;
+      font-size: 24px;
+      font-weight: 600;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    main {
+      padding: 20px;
+      max-width: 900px;
+      margin: auto;
+    }
+    input, button, textarea {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-top: 6px;
+      font-size: 16px;
+      width: 100%;
+    }
+    .channel {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    }
+    .channel input {
+      margin-bottom: 10px;
+    }
+    .buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s ease;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    textarea {
+      margin-top: 15px;
+      height: 250px;
+      background: #f9fafb;
+    }
+    @media (max-width: 600px) {
+      .buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    📺 EXTM3U Playlist Creator
+  </header>
+  <main>
+    <label for="logoAll">🖼️ Same Logo URL for All Channels</label>
+    <input type="text" id="logoAll" placeholder="https://example.com/logo.png" />
+    <button onclick="setLogoToAll()">Set Logo to All</button>
+
+    <div id="channels"></div>
+    <div class="buttons">
+      <button onclick="addChannel()">➕ Add Channel</button>
+      <button onclick="generateM3U()">⚙️ Generate Playlist</button>
+      <button onclick="downloadM3U()">⬇️ Download .m3u</button>
+    </div>
+
+    <h3 style="margin-top: 30px;">📃 M3U Output</h3>
+    <textarea id="output" readonly placeholder="Generated M3U playlist will appear here..."></textarea>
+  </main>
+
+  <script>
+    const channels = [];
+
+    function addChannel() {
+      const index = channels.length;
+      channels.push({ name: "", url: "", logo: "", group: "" });
+
+      const div = document.createElement("div");
+      div.className = "channel";
+      div.innerHTML = `
+        <input placeholder="📺 Channel Name" oninput="channels[${index}].name=this.value" />
+        <input placeholder="🔗 Stream URL" oninput="channels[${index}].url=this.value" />
+        <input placeholder="🖼️ Logo URL" class="logo-input" oninput="channels[${index}].logo=this.value" />
+        <input placeholder="📁 Group Title" oninput="channels[${index}].group=this.value" />
+      `;
+      document.getElementById("channels").appendChild(div);
+    }
+
+    function setLogoToAll() {
+      const logo = document.getElementById("logoAll").value;
+      document.querySelectorAll(".logo-input").forEach((input, i) => {
+        input.value = logo;
+        channels[i].logo = logo;
+      });
+    }
+
+    function generateM3U() {
+      let output = "#EXTM3U\n";
+      channels.forEach(ch => {
+        if (ch.name && ch.url) {
+          output += `#EXTINF:-1 tvg-logo="${ch.logo}" group-title="${ch.group}",${ch.name}\n${ch.url}\n`;
+        }
+      });
+      document.getElementById("output").value = output;
+    }
+
+    function downloadM3U() {
+      const content = document.getElementById("output").value;
+      const blob = new Blob([content], { type: "audio/x-mpegurl" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "playlist.m3u";
+      a.click();
+    }
+
+    // Initialize with one channel
+    addChannel();
+  </script>
+</body>
+</html>
