@@ -6,11 +6,11 @@
   <title>EXTM3U Playlist Creator</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background: #f9fafb; font-family: 'Segoe UI', sans-serif; }
-    .channel-input { margin-bottom: 15px; }
-    .preview-box { background: #fff; border: 1px solid #ccc; padding: 10px; border-radius: 8px; margin-top: 10px; display: flex; align-items: center; gap: 10px; }
-    .preview-box img { height: 30px; width: 30px; object-fit: contain; border-radius: 5px; }
-    textarea { width: 100%; height: 200px; margin-top: 20px; font-family: monospace; }
+    body { background: #f8fafc; font-family: 'Segoe UI', sans-serif; }
+    .channel-preview { display: flex; align-items: center; gap: 10px; padding: 10px; background: white; margin-bottom: 8px; border-radius: 8px; box-shadow: 0 0 3px rgba(0,0,0,0.1); }
+    .channel-preview img { height: 30px; width: 30px; object-fit: contain; border-radius: 5px; }
+    textarea { width: 100%; height: 200px; font-family: monospace; margin-top: 20px; }
+    .footer { margin-top: 30px; text-align: center; font-size: 13px; color: gray; }
   </style>
 </head>
 <body>
@@ -18,72 +18,72 @@
     <h3 class="text-center mb-4">📺 EXTM3U Playlist Creator</h3>
 
     <div class="mb-3">
-      <label class="form-label">🖼️ Logo URL (used for all channels)</label>
-      <input type="text" id="logoAll" class="form-control" placeholder="https://example.com/logo.png" oninput="updatePreviewLogos()" />
+      <label class="form-label">🌐 Global Logo URL (default for all)</label>
+      <input type="text" id="logoAll" class="form-control" placeholder="https://example.com/logo.png" />
     </div>
 
-    <div id="channelForm" class="mb-4">
-      <!-- Channel input fields -->
+    <div class="row g-2 mb-3">
+      <div class="col-md-4">
+        <input id="channelName" class="form-control" placeholder="📺 Channel Name" />
+      </div>
+      <div class="col-md-4">
+        <input id="channelURL" class="form-control" placeholder="🔗 Stream URL" />
+      </div>
+      <div class="col-md-4">
+        <input id="channelLogo" class="form-control" placeholder="🖼️ Optional Logo URL" />
+      </div>
     </div>
+    <button class="btn btn-success w-100 mb-4" onclick="addChannel()">+ Add Channel</button>
 
-    <div class="d-flex gap-2 mb-4 flex-wrap">
-      <button class="btn btn-success" onclick="addChannel()">+ Add Channel</button>
+    <div id="previewList" class="mb-4"></div>
+
+    <div class="d-flex gap-2 flex-wrap mb-3">
       <button class="btn btn-info" onclick="generateM3U()">🎯 Generate</button>
       <button class="btn btn-dark" onclick="downloadM3U()">⬇ Download</button>
     </div>
 
-    <h5>📋 Playlist Preview</h5>
-    <div id="previewList"></div>
-
-    <h5 class="mt-4">📄 M3U Output</h5>
+    <h5>📄 Output</h5>
     <textarea id="output" readonly></textarea>
+
+    <div class="footer">Made with ❤️ — Global & Custom Logo Support</div>
   </div>
 
   <script>
     const channels = [];
 
     function addChannel() {
-      const index = channels.length;
-      channels.push({ name: "", url: "", logo: "" });
+      const name = document.getElementById("channelName").value.trim();
+      const url = document.getElementById("channelURL").value.trim();
+      const customLogo = document.getElementById("channelLogo").value.trim();
+      const globalLogo = document.getElementById("logoAll").value.trim();
 
-      const formDiv = document.createElement("div");
-      formDiv.className = "channel-input";
-      formDiv.innerHTML = `
-        <input class="form-control mb-2" placeholder="📺 Channel Name" oninput="channels[${index}].name=this.value; updatePreview()" />
-        <input class="form-control" placeholder="🔗 Stream URL" oninput="channels[${index}].url=this.value; updatePreview()" />
+      if (!name || !url) {
+        alert("Channel name and URL are required!");
+        return;
+      }
+
+      const finalLogo = customLogo || globalLogo || "https://via.placeholder.com/30";
+
+      channels.push({ name, url, logo: finalLogo });
+
+      const previewDiv = document.createElement("div");
+      previewDiv.className = "channel-preview";
+      previewDiv.innerHTML = `
+        <img src="${finalLogo}" alt="Logo">
+        <span>${name}</span>
       `;
-      document.getElementById("channelForm").appendChild(formDiv);
-      updatePreview();
-    }
+      document.getElementById("previewList").appendChild(previewDiv);
 
-    function updatePreviewLogos() {
-      const logo = document.getElementById("logoAll").value;
-      channels.forEach(ch => ch.logo = logo);
-      updatePreview();
-    }
-
-    function updatePreview() {
-      const logo = document.getElementById("logoAll").value;
-      const container = document.getElementById("previewList");
-      container.innerHTML = "";
-      channels.forEach((ch, index) => {
-        if (logo) ch.logo = logo;
-        const div = document.createElement("div");
-        div.className = "preview-box";
-        div.innerHTML = `
-          <img src="${ch.logo}" alt="Logo"/>
-          <strong>${ch.name || '(Unnamed)'}</strong>
-        `;
-        container.appendChild(div);
-      });
+      // Clear inputs
+      document.getElementById("channelName").value = "";
+      document.getElementById("channelURL").value = "";
+      document.getElementById("channelLogo").value = "";
     }
 
     function generateM3U() {
       let output = "#EXTM3U\n";
       channels.forEach(ch => {
-        if (ch.name && ch.url) {
-          output += `#EXTINF:-1 tvg-logo="${ch.logo}" group-title="",${ch.name}\n${ch.url}\n`;
-        }
+        output += `#EXTINF:-1 tvg-logo="${ch.logo}",${ch.name}\n${ch.url}\n`;
       });
       document.getElementById("output").value = output;
     }
@@ -96,9 +96,6 @@
       a.download = "playlist.m3u";
       a.click();
     }
-
-    // Load one input at first
-    addChannel();
   </script>
 </body>
 </html>
