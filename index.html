@@ -7,113 +7,149 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
-      background: #f0f2f5; /* Lighter background for better contrast */
+      background: #e0e5ec; /* Softer, debossed-like background */
       font-family: 'Segoe UI', sans-serif;
-      perspective: 1000px; /* For 3D transformations */
+      perspective: 1500px; /* Increased perspective for stronger 3D */
+      overflow-x: hidden; /* Prevent horizontal scroll */
     }
     .container {
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.15), 0 6px 6px rgba(0,0,0,0.1); /* Stronger shadow for depth */
-      padding: 30px;
-      transform-style: preserve-3d; /* Ensure children can be 3D */
+      background: #e0e5ec; /* Match body background for "neumorphic" effect */
+      border-radius: 20px; /* More rounded */
+      box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.5); /* Neumorphic shadow */
+      padding: 35px;
+      transform-style: preserve-3d;
+      margin-top: 30px;
+      margin-bottom: 30px;
     }
     h3 {
       color: #333;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Subtle text shadow for pop */
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.08);
+      font-weight: 600;
+    }
+    .form-label {
+        color: #555;
+        font-weight: 500;
+        margin-bottom: 8px;
     }
     .form-control, .btn {
-      border-radius: 8px; /* Slightly more rounded corners */
-      transition: all 0.3s ease; /* Smooth transitions for hover effects */
+      border-radius: 12px; /* Even more rounded */
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother animation */
+      border: none; /* No default border */
     }
     .form-control {
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.06); /* Inset shadow for depth */
-      border: 1px solid #ddd;
+      background: #e0e5ec;
+      box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.5), inset -5px -5px 10px rgba(255, 255, 255, 0.6); /* Inset neumorphic shadow */
+      padding: 12px 18px;
+      color: #333;
+    }
+    .form-control::placeholder {
+        color: #888;
     }
     .form-control:focus {
-      border-color: #88bbed;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.06), 0 0 8px rgba(136,187,237,0.4); /* Focus glow */
+      outline: none; /* Remove default outline */
+      box-shadow: inset 3px 3px 7px rgba(163, 177, 198, 0.5), inset -3px -3px 7px rgba(255, 255, 255, 0.6), 0 0 0 3px rgba(88, 178, 255, 0.2); /* Soft focus glow */
+      background: #ebf1f7; /* Slightly lighter on focus */
     }
     .btn {
-      padding: 10px 20px;
+      padding: 12px 25px;
       font-weight: bold;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
       text-transform: uppercase;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* Lifted button effect */
-      transform: translateY(0);
+      box-shadow: 6px 6px 12px rgba(163, 177, 198, 0.6), -6px -6px 12px rgba(255, 255, 255, 0.5); /* Neumorphic button shadow */
+      transform: translateZ(0); /* Ensure hardware acceleration */
+      position: relative;
+      overflow: hidden; /* For ripple effect if added later */
+      color: #333;
     }
     .btn:hover {
-      transform: translateY(-2px); /* Slight lift on hover */
-      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+      box-shadow: 3px 3px 6px rgba(163, 177, 198, 0.6), -3px -3px 6px rgba(255, 255, 255, 0.5); /* Pressed look on hover */
+      transform: translateY(1px); /* Slight press down */
+    }
+    .btn:active {
+        box-shadow: inset 3px 3px 7px rgba(163, 177, 198, 0.7), inset -3px -3px 7px rgba(255, 255, 255, 0.6); /* Deeply pressed */
+        transform: translateY(2px);
     }
     .btn-success {
-      background-image: linear-gradient(to right, #4CAF50 0%, #689F38 100%); /* Gradient for more dimension */
-      border: none;
+      background-color: #6a9c7b; /* Softer green */
+      color: white;
+      text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.1);
     }
     .btn-info {
-      background-image: linear-gradient(to right, #03A9F4 0%, #0288D1 100%);
-      border: none;
+      background-color: #58b2dc; /* Softer blue */
+      color: white;
+      text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.1);
     }
     .btn-dark {
-      background-image: linear-gradient(to right, #343a40 0%, #212529 100%);
-      border: none;
-      color: #fff;
+      background-color: #4a5a6a; /* Softer dark */
+      color: white;
+      text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.1);
+    }
+    .btn-secondary {
+        background-color: #aebfd4; /* Softer grey */
+        color: #333;
     }
 
     .channel-preview {
       display: flex;
       align-items: center;
-      gap: 12px; /* Slightly more space */
-      padding: 12px;
-      background: linear-gradient(to right, #ffffff 0%, #f9f9f9 100%); /* Subtle gradient */
-      margin-bottom: 10px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.08); /* Stronger shadow */
-      border: 1px solid #eee;
-      transform-style: preserve-3d;
-      transition: all 0.2s ease;
-      position: relative; /* For delete button positioning */
+      gap: 15px;
+      padding: 15px;
+      background: #e0e5ec;
+      margin-bottom: 12px;
+      border-radius: 15px;
+      box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6), -5px -5px 10px rgba(255, 255, 255, 0.5); /* Neumorphic shadow */
+      transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+      position: relative;
     }
     .channel-preview:hover {
-      transform: translateY(-3px) scale(1.01); /* Lift and slightly enlarge on hover */
-      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+      transform: translateY(-2px);
+      box-shadow: 8px 8px 15px rgba(163, 177, 198, 0.7), -8px -8px 15px rgba(255, 255, 255, 0.6);
     }
     .channel-preview img {
-      height: 35px; /* Slightly larger logo */
-      width: 35px;
+      height: 40px; /* Larger logo */
+      width: 40px;
       object-fit: contain;
-      border-radius: 6px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Shadow for logo */
-      background: #fff; /* Ensure logo background is white if transparent */
-      padding: 3px; /* Small padding for the logo box */
+      border-radius: 8px;
+      box-shadow: 2px 2px 5px rgba(163, 177, 198, 0.4), -2px -2px 5px rgba(255, 255, 255, 0.4); /* Neumorphic logo shadow */
+      background: #e0e5ec;
+      padding: 5px;
     }
     .channel-preview span {
       font-weight: 500;
-      color: #333;
-      flex-grow: 1; /* Allows name to take available space */
+      color: #444;
+      flex-grow: 1;
     }
     .channel-preview .delete-btn {
       background: none;
       border: none;
-      color: #ff4d4f;
-      font-size: 1.2em;
+      color: #ff6b6b; /* Softer red */
+      font-size: 1.4em;
       cursor: pointer;
-      opacity: 0;
-      transition: opacity 0.2s ease;
+      opacity: 0.7;
+      transition: opacity 0.2s ease, transform 0.2s ease;
     }
-    .channel-preview:hover .delete-btn {
+    .channel-preview .delete-btn:hover {
       opacity: 1;
+      transform: scale(1.1);
     }
     textarea {
       width: 100%;
       height: 200px;
       font-family: monospace;
       margin-top: 20px;
-      border-radius: 8px;
-      box-shadow: inset 0 2px 5px rgba(0,0,0,0.08); /* Inset shadow for textarea */
-      padding: 15px;
-      border: 1px solid #ddd;
-      resize: vertical; /* Allow vertical resizing */
+      border-radius: 12px;
+      box-shadow: inset 5px 5px 10px rgba(163, 177, 198, 0.5), inset -5px -5px 10px rgba(255, 255, 255, 0.6);
+      padding: 18px;
+      border: none;
+      background: #e0e5ec;
+      color: #333;
+      resize: vertical;
+    }
+    h5 {
+        color: #444;
+        font-weight: 600;
+        margin-top: 30px;
+        margin-bottom: 15px;
     }
     .footer {
       margin-top: 40px;
@@ -128,6 +164,87 @@
     }
     .footer a:hover {
         text-decoration: underline;
+    }
+
+    /* Saved Playlists Styling */
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f6f6f6;
+        min-width: 250px;
+        box-shadow: 8px 8px 15px rgba(163, 177, 198, 0.7), -8px -8px 15px rgba(255, 255, 255, 0.6);
+        border-radius: 12px;
+        z-index: 1;
+        max-height: 300px;
+        overflow-y: auto;
+        left: 0;
+        top: 100%;
+        margin-top: 10px; /* Space from button */
+        padding: 10px 0;
+    }
+    .dropdown-content.show {
+        display: block;
+    }
+    .dropdown-content button {
+        color: black;
+        padding: 10px 15px;
+        text-decoration: none;
+        display: block;
+        background: none;
+        border: none;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+        font-weight: 500;
+        border-bottom: 1px solid #eee;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+    .dropdown-content button:last-child {
+        border-bottom: none;
+    }
+    .dropdown-content button:hover {
+        background-color: #e0e5ec;
+        transform: translateX(5px);
+    }
+    .dropdown-item-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 15px;
+    }
+    .dropdown-item-actions .playlist-name-text {
+        flex-grow: 1;
+        text-align: left;
+        padding: 10px 0;
+        cursor: pointer;
+    }
+    .dropdown-item-actions .delete-playlist-btn {
+        background: none;
+        border: none;
+        color: #ff6b6b;
+        font-size: 1.1em;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    .dropdown-item-actions .delete-playlist-btn:hover {
+        opacity: 1;
+        background-color: rgba(255, 107, 107, 0.1);
+    }
+
+    .save-playlist-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    .save-playlist-group input {
+        flex-grow: 1;
     }
   </style>
 </head>
@@ -158,48 +275,84 @@
     <div class="d-flex gap-2 flex-wrap mb-3">
       <button class="btn btn-info" onclick="generateM3U()">🎯 Generate</button>
       <button class="btn btn-dark" onclick="downloadM3U()">⬇ Download</button>
-      <button class="btn btn-secondary" onclick="clearAllChannels()">🗑️ Clear All</button> </div>
+      <button class="btn btn-secondary" onclick="clearCurrentChannels()">🗑️ Clear Current</button>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap mb-3 align-items-end">
+        <div class="dropdown">
+            <button class="btn btn-primary" onclick="toggleSavedPlaylistsDropdown()">
+                Saved Playlists <span id="savedPlaylistsCount"></span>
+            </button>
+            <div id="savedPlaylistsDropdown" class="dropdown-content">
+                <p style="padding: 10px 15px; color: #888;">No saved playlists yet.</p>
+            </div>
+        </div>
+        <div class="save-playlist-group flex-grow-1">
+            <input type="text" id="playlistNameInput" class="form-control" placeholder="Enter playlist name to save" />
+            <button class="btn btn-primary" onclick="saveCurrentPlaylist()">💾 Save Current</button>
+        </div>
+    </div>
+
 
     <h5>📄 Output</h5>
     <textarea id="output" readonly></textarea>
 
     <div class="footer">
-        Made with ❤️ — Global & Custom Logo Support | Your Website: <a href="https://new-try-theta.vercel.app/?link=https%3A%2F%2Fnew-try-theta.vercel.app%2Fplaylist.m3u" target="_blank">LIVE TV 📺</a>
+        Made with ❤️ — By NR X | Enjoy  <a href="https://new-try-theta.vercel.app/?link=https%3A%2F%2Fnew-try-theta.vercel.app%2Fplaylist.m3u" target="_blank">Live TV 📺</a>
     </div>
   </div>
 
   <script>
-    let channels = []; // Use 'let' so it can be reassigned
+    let currentChannels = []; // Holds channels for the current session
+    let savedPlaylists = {}; // Stores multiple playlists by name
 
-    // Function to save channels to Local Storage
-    function saveChannels() {
-      localStorage.setItem('m3uChannels', JSON.stringify(channels));
+    const CURRENT_PLAYLIST_KEY = 'currentM3UChannels';
+    const SAVED_PLAYLISTS_KEY = 'savedM3UPlaylists';
+
+    // --- Local Storage Functions ---
+    function saveCurrentChannels() {
+      localStorage.setItem(CURRENT_PLAYLIST_KEY, JSON.stringify(currentChannels));
     }
 
-    // Function to load channels from Local Storage
-    function loadChannels() {
-      const storedChannels = localStorage.getItem('m3uChannels');
+    function loadCurrentChannels() {
+      const storedChannels = localStorage.getItem(CURRENT_PLAYLIST_KEY);
       if (storedChannels) {
-        channels = JSON.parse(storedChannels);
-        renderChannels(); // Render them when loaded
+        currentChannels = JSON.parse(storedChannels);
+        renderCurrentChannels();
       }
     }
 
-    // Function to render channels in the preview list
-    function renderChannels() {
+    function savePlaylistsToLocalStorage() {
+        localStorage.setItem(SAVED_PLAYLISTS_KEY, JSON.stringify(savedPlaylists));
+    }
+
+    function loadPlaylistsFromLocalStorage() {
+        const storedPlaylists = localStorage.getItem(SAVED_PLAYLISTS_KEY);
+        if (storedPlaylists) {
+            savedPlaylists = JSON.parse(storedPlaylists);
+        }
+        renderSavedPlaylistsDropdown();
+    }
+
+    // --- Channel Management Functions (Current Playlist) ---
+    function renderCurrentChannels() {
       const previewList = document.getElementById("previewList");
-      previewList.innerHTML = ""; // Clear existing list
-      channels.forEach((ch, index) => {
-        const previewDiv = document.createElement("div");
-        previewDiv.className = "channel-preview";
-        previewDiv.innerHTML = `
-          <img src="${ch.logo}" alt="Logo">
-          <span>${ch.name}</span>
-          <button class="delete-btn" onclick="removeChannel(${index})">✖</button>
-        `;
-        previewList.appendChild(previewDiv);
-      });
-      generateM3U(); // Regenerate M3U output after rendering
+      previewList.innerHTML = "";
+      if (currentChannels.length === 0) {
+        previewList.innerHTML = `<p style="text-align: center; color: #888; padding: 20px;">No channels added yet.</p>`;
+      } else {
+        currentChannels.forEach((ch, index) => {
+          const previewDiv = document.createElement("div");
+          previewDiv.className = "channel-preview";
+          previewDiv.innerHTML = `
+            <img src="${ch.logo}" alt="Logo">
+            <span>${ch.name}</span>
+            <button class="delete-btn" onclick="removeChannel(${index})">✖</button>
+          `;
+          previewList.appendChild(previewDiv);
+        });
+      }
+      generateM3U(); // Always regenerate output after rendering
     }
 
     function addChannel() {
@@ -215,9 +368,9 @@
 
       const finalLogo = customLogo || globalLogo || "https://via.placeholder.com/30";
 
-      channels.push({ name, url, logo: finalLogo });
-      saveChannels(); // Save after adding
-      renderChannels(); // Re-render to show the new channel
+      currentChannels.push({ name, url, logo: finalLogo });
+      saveCurrentChannels();
+      renderCurrentChannels();
 
       // Clear inputs
       document.getElementById("channelName").value = "";
@@ -226,22 +379,23 @@
     }
 
     function removeChannel(index) {
-      channels.splice(index, 1); // Remove channel at the given index
-      saveChannels(); // Save after removing
-      renderChannels(); // Re-render the list
+      currentChannels.splice(index, 1);
+      saveCurrentChannels();
+      renderCurrentChannels();
     }
 
-    function clearAllChannels() {
-      if (confirm("Are you sure you want to clear all channels? This action cannot be undone.")) {
-        channels = []; // Clear the array
-        saveChannels(); // Save empty array
-        renderChannels(); // Clear the display
+    function clearCurrentChannels() {
+      if (confirm("Are you sure you want to clear all channels from the current playlist?")) {
+        currentChannels = [];
+        saveCurrentChannels();
+        renderCurrentChannels();
       }
     }
 
+    // --- M3U Generation & Download ---
     function generateM3U() {
       let output = "#EXTM3U\n";
-      channels.forEach(ch => {
+      currentChannels.forEach(ch => {
         output += `#EXTINF:-1 tvg-logo="${ch.logo}",${ch.name}\n${ch.url}\n`;
       });
       document.getElementById("output").value = output;
@@ -249,6 +403,10 @@
 
     function downloadM3U() {
       const content = document.getElementById("output").value;
+      if (currentChannels.length === 0) {
+          alert("Add some channels before downloading a playlist!");
+          return;
+      }
       const blob = new Blob([content], { type: "audio/x-mpegurl" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
@@ -256,8 +414,106 @@
       a.click();
     }
 
-    // Load channels when the page loads
-    window.onload = loadChannels;
+    // --- Saved Playlists Menu Functions ---
+    function toggleSavedPlaylistsDropdown() {
+        const dropdown = document.getElementById("savedPlaylistsDropdown");
+        dropdown.classList.toggle("show");
+        if (dropdown.classList.contains("show")) {
+            renderSavedPlaylistsDropdown(); // Refresh content when opened
+        }
+    }
+
+    function renderSavedPlaylistsDropdown() {
+        const dropdownContent = document.getElementById("savedPlaylistsDropdown");
+        dropdownContent.innerHTML = "";
+        const playlistNames = Object.keys(savedPlaylists);
+        document.getElementById('savedPlaylistsCount').textContent = `(${playlistNames.length})`;
+
+        if (playlistNames.length === 0) {
+            dropdownContent.innerHTML = `<p style="padding: 10px 15px; color: #888; margin: 0;">No saved playlists yet.</p>`;
+        } else {
+            playlistNames.forEach(name => {
+                const itemDiv = document.createElement("div");
+                itemDiv.className = "dropdown-item-actions";
+                itemDiv.innerHTML = `
+                    <span class="playlist-name-text" onclick="loadSavedPlaylist('${name}')">${name}</span>
+                    <button class="delete-playlist-btn" onclick="deleteSavedPlaylist('${name}', event)">✖</button>
+                `;
+                dropdownContent.appendChild(itemDiv);
+            });
+        }
+    }
+
+    function saveCurrentPlaylist() {
+        const playlistNameInput = document.getElementById("playlistNameInput");
+        let playlistName = playlistNameInput.value.trim();
+
+        if (currentChannels.length === 0) {
+            alert("No channels to save. Add channels to the current playlist first.");
+            return;
+        }
+
+        if (!playlistName) {
+            playlistName = prompt("Please enter a name for this playlist:", `My Playlist ${Object.keys(savedPlaylists).length + 1}`);
+            if (!playlistName) return; // User cancelled
+            playlistName = playlistName.trim();
+            if (!playlistName) {
+                alert("Playlist name cannot be empty.");
+                return;
+            }
+        }
+
+        if (savedPlaylists[playlistName]) {
+            if (!confirm(`A playlist named "${playlistName}" already exists. Do you want to overwrite it?`)) {
+                return;
+            }
+        }
+
+        savedPlaylists[playlistName] = [...currentChannels]; // Save a copy of currentChannels
+        savePlaylistsToLocalStorage();
+        renderSavedPlaylistsDropdown();
+        alert(`Playlist "${playlistName}" saved successfully!`);
+        playlistNameInput.value = ""; // Clear input after saving
+    }
+
+    function loadSavedPlaylist(name) {
+        if (confirm(`Loading "${name}" will replace your current playlist. Continue?`)) {
+            currentChannels = [...savedPlaylists[name]]; // Load a copy
+            saveCurrentChannels(); // Save the newly loaded playlist as current
+            renderCurrentChannels();
+            toggleSavedPlaylistsDropdown(); // Close dropdown
+            alert(`Playlist "${name}" loaded.`);
+        }
+    }
+
+    function deleteSavedPlaylist(name, event) {
+        event.stopPropagation(); // Prevent loading the playlist when deleting
+        if (confirm(`Are you sure you want to delete the playlist "${name}"? This action cannot be undone.`)) {
+            delete savedPlaylists[name];
+            savePlaylistsToLocalStorage();
+            renderSavedPlaylistsDropdown();
+            alert(`Playlist "${name}" deleted.`);
+        }
+    }
+
+    // Close the dropdown if the user clicks outside of it
+    window.onclick = function(event) {
+      if (!event.target.matches('.btn-primary') && !event.target.closest('.dropdown-content')) {
+        const dropdowns = document.getElementsByClassName("dropdown-content");
+        for (let i = 0; i < dropdowns.length; i++) {
+          const openDropdown = dropdowns[i];
+          if (openDropdown.classList.contains('show')) {
+            openDropdown.classList.remove('show');
+          }
+        }
+      }
+    }
+
+    // --- Initialize on Load ---
+    window.onload = () => {
+        loadCurrentChannels(); // Load the last active playlist
+        loadPlaylistsFromLocalStorage(); // Load all saved playlists for the menu
+    };
   </script>
 </body>
 </html>
