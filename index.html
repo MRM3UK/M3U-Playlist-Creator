@@ -72,6 +72,7 @@
       border: 1px solid #eee;
       transform-style: preserve-3d;
       transition: all 0.2s ease;
+      position: relative; /* For delete button positioning */
     }
     .channel-preview:hover {
       transform: translateY(-3px) scale(1.01); /* Lift and slightly enlarge on hover */
@@ -89,6 +90,19 @@
     .channel-preview span {
       font-weight: 500;
       color: #333;
+      flex-grow: 1; /* Allows name to take available space */
+    }
+    .channel-preview .delete-btn {
+      background: none;
+      border: none;
+      color: #ff4d4f;
+      font-size: 1.2em;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .channel-preview:hover .delete-btn {
+      opacity: 1;
     }
     textarea {
       width: 100%;
@@ -107,6 +121,13 @@
       font-size: 14px;
       color: #777;
       text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.05);
+    }
+    .footer a {
+        color: #007bff;
+        text-decoration: none;
+    }
+    .footer a:hover {
+        text-decoration: underline;
     }
   </style>
 </head>
@@ -137,16 +158,49 @@
     <div class="d-flex gap-2 flex-wrap mb-3">
       <button class="btn btn-info" onclick="generateM3U()">🎯 Generate</button>
       <button class="btn btn-dark" onclick="downloadM3U()">⬇ Download</button>
-    </div>
+      <button class="btn btn-secondary" onclick="clearAllChannels()">🗑️ Clear All</button> </div>
 
     <h5>📄 Output</h5>
     <textarea id="output" readonly></textarea>
 
-    <div class="footer">Made with ❤️ — MR X TV </div>
+    <div class="footer">
+        Made with ❤️ — Global & Custom Logo Support | Your Website: <a href="https://new-try-theta.vercel.app/?link=https%3A%2F%2Fnew-try-theta.vercel.app%2Fplaylist.m3u" target="_blank">LIVE TV 📺</a>
+    </div>
   </div>
 
   <script>
-    const channels = [];
+    let channels = []; // Use 'let' so it can be reassigned
+
+    // Function to save channels to Local Storage
+    function saveChannels() {
+      localStorage.setItem('m3uChannels', JSON.stringify(channels));
+    }
+
+    // Function to load channels from Local Storage
+    function loadChannels() {
+      const storedChannels = localStorage.getItem('m3uChannels');
+      if (storedChannels) {
+        channels = JSON.parse(storedChannels);
+        renderChannels(); // Render them when loaded
+      }
+    }
+
+    // Function to render channels in the preview list
+    function renderChannels() {
+      const previewList = document.getElementById("previewList");
+      previewList.innerHTML = ""; // Clear existing list
+      channels.forEach((ch, index) => {
+        const previewDiv = document.createElement("div");
+        previewDiv.className = "channel-preview";
+        previewDiv.innerHTML = `
+          <img src="${ch.logo}" alt="Logo">
+          <span>${ch.name}</span>
+          <button class="delete-btn" onclick="removeChannel(${index})">✖</button>
+        `;
+        previewList.appendChild(previewDiv);
+      });
+      generateM3U(); // Regenerate M3U output after rendering
+    }
 
     function addChannel() {
       const name = document.getElementById("channelName").value.trim();
@@ -162,19 +216,27 @@
       const finalLogo = customLogo || globalLogo || "https://via.placeholder.com/30";
 
       channels.push({ name, url, logo: finalLogo });
-
-      const previewDiv = document.createElement("div");
-      previewDiv.className = "channel-preview";
-      previewDiv.innerHTML = `
-        <img src="${finalLogo}" alt="Logo">
-        <span>${name}</span>
-      `;
-      document.getElementById("previewList").appendChild(previewDiv);
+      saveChannels(); // Save after adding
+      renderChannels(); // Re-render to show the new channel
 
       // Clear inputs
       document.getElementById("channelName").value = "";
       document.getElementById("channelURL").value = "";
       document.getElementById("channelLogo").value = "";
+    }
+
+    function removeChannel(index) {
+      channels.splice(index, 1); // Remove channel at the given index
+      saveChannels(); // Save after removing
+      renderChannels(); // Re-render the list
+    }
+
+    function clearAllChannels() {
+      if (confirm("Are you sure you want to clear all channels? This action cannot be undone.")) {
+        channels = []; // Clear the array
+        saveChannels(); // Save empty array
+        renderChannels(); // Clear the display
+      }
     }
 
     function generateM3U() {
@@ -193,6 +255,9 @@
       a.download = "playlist.m3u";
       a.click();
     }
+
+    // Load channels when the page loads
+    window.onload = loadChannels;
   </script>
 </body>
 </html>
