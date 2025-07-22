@@ -501,6 +501,12 @@
       const storedChannels = localStorage.getItem(CURRENT_PLAYLIST_KEY);
       if (storedChannels) {
         currentChannels = JSON.parse(storedChannels);
+        // নিশ্চিত করুন যে প্রতিটি চ্যানেলের জন্য একটি বৈধ লোগো আছে
+        currentChannels.forEach(channel => {
+            if (!channel.logo || channel.logo === "https://via.placeholder.com/30?text=Loading...") {
+                channel.logo = document.getElementById("logoAll").value.trim() || "https://via.placeholder.com/30";
+            }
+        });
         renderCurrentChannels();
       } else {
         renderCurrentChannels(); // Show "No channels added yet" message on initial load
@@ -569,7 +575,7 @@
     }
 
     async function searchMovieLogo(movieName) {
-        if (!movieName || TMDB_API_KEY === 'YOUR_TMDB_API_KEY') {
+        if (!movieName || TMDB_API_KEY === 'YOUR_TMDB_API_KEY' || !TMDB_API_KEY) {
             console.warn("TMDB API Key is not set or movie name is empty. Using placeholder logo.");
             return "https://via.placeholder.com/30"; 
         }
@@ -607,30 +613,39 @@
       let finalLogo = customLogo;
       // যদি কাস্টম লোগো না থাকে এবং চ্যানেলের নাম 'movie' অন্তর্ভুক্ত করে, তবে TMDB থেকে লোগো সার্চ করুন
       if (!customLogo && name.toLowerCase().includes("movie")) {
-          // Temporarily set placeholder/loading logo while fetching
-          finalLogo = "https://via.placeholder.com/30?text=Loading..."; 
+          // Add channel with a temporary loading logo first
+          const tempLogo = "https://via.placeholder.com/30?text=Loading...";
+          const channelIndex = currentChannels.length; // Get the index before pushing
+          currentChannels.push({ name, url, logo: tempLogo, group: globalGroup });
+          saveCurrentChannels();
           renderCurrentChannels(); // Render immediately with loading state
 
+          // Fetch logo asynchronously
           const fetchedLogo = await searchMovieLogo(name);
-          // Update the channel with the fetched logo after it's added
-          // This requires finding the last added channel or a more robust approach
-          // For simplicity, we'll update the input field immediately
-          document.getElementById("channelLogo").value = fetchedLogo;
-          finalLogo = fetchedLogo; // Use the fetched logo for this add operation
+          
+          // Update the specific channel with the fetched logo
+          currentChannels[channelIndex].logo = fetchedLogo;
+          document.getElementById("channelLogo").value = fetchedLogo; // Update input for next use
+          
+          // Re-render after a short delay to ensure UI updates
+          setTimeout(() => {
+            saveCurrentChannels();
+            renderCurrentChannels();
+          }, 100); 
+
       } else {
           finalLogo = customLogo || globalLogo || "https://via.placeholder.com/30";
+          currentChannels.push({ name, url, logo: finalLogo, group: globalGroup });
+          saveCurrentChannels();
+          renderCurrentChannels();
       }
-
-      const finalGroup = globalGroup; // Always use the global group for new channels
-
-      currentChannels.push({ name, url, logo: finalLogo, group: finalGroup });
-      saveCurrentChannels();
-      renderCurrentChannels(); // Re-render to show the updated logo (if fetched)
-
-      // Clear inputs
+      
+      // Clear inputs (except customLogo if it was just fetched by TMDB)
       document.getElementById("channelName").value = "";
       document.getElementById("channelURL").value = "";
-      document.getElementById("channelLogo").value = "";
+      if (!name.toLowerCase().includes("movie") || customLogo) { // Only clear if not TMDB fetched
+        document.getElementById("channelLogo").value = ""; 
+      }
     }
 
     function removeChannel(index) {
@@ -660,6 +675,7 @@
         // Update the channel object
         channel.name = newName.trim();
         channel.url = newUrl.trim();
+        // নিশ্চিত করুন যে এডিট করার সময় লোগো URL খালি না থাকে
         channel.logo = newLogo.trim() || document.getElementById("logoAll").value.trim() || "https://via.placeholder.com/30";
         channel.group = newGroup.trim();
 
@@ -780,7 +796,7 @@
             }
         }
 
-        savedPlay playlists = {...savedPlaylists, [playlistName]: [...currentChannels]}; // Save a copy of currentChannels
+        savedPlaylists = {...savedPlaylists, [playlistName]: [...currentChannels]}; // Save a copy of currentChannels
         savePlaylistsToLocalStorage();
         renderSavedPlaylistsDropdown();
         alert(`Playlist "${playlistName}" saved successfully!`);
@@ -791,6 +807,12 @@
         // যদি লোড করা প্লেলিস্টটি Auto Saved Session হয়, তাহলে নিশ্চিতকরণ বার্তা বাদ দেওয়া যেতে পারে
         if (name === AUTO_SAVE_PLAYLIST_NAME || confirm(`Loading "${name}" will replace your current playlist. Continue?`)) {
             currentChannels = [...savedPlaylists?.[name] || []]; // Load a copy
+            // নিশ্চিত করুন যে লোড করার সময় প্রতিটি চ্যানেলের জন্য একটি বৈধ লোগো আছে
+            currentChannels.forEach(channel => {
+                if (!channel.logo || channel.logo === "https://via.placeholder.com/30?text=Loading...") {
+                    channel.logo = document.getElementById("logoAll").value.trim() || "https://via.placeholder.com/30";
+                }
+            });
             saveCurrentChannels(); // Save the newly loaded playlist as current
             renderCurrentChannels();
             toggleSavedPlaylistsDropdown(); // Close dropdown
