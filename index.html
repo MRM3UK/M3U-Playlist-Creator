@@ -342,14 +342,17 @@
     </div>
 
     <div class="row g-2 mb-3">
-      <div class="col-md-4">
+      <div class="col-md-3">
         <input id="channelName" class="form-control" placeholder="📺 Channel Name" />
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
         <input id="channelURL" class="form-control" placeholder="🔗 Stream URL" />
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
         <input id="channelLogo" class="form-control" placeholder="🖼️ Optional Logo URL" />
+      </div>
+      <div class="col-md-3">
+        <input id="channelGroup" class="form-control" placeholder="🗂️ Global Group (e.g., Movies)" />
       </div>
     </div>
     <button class="btn btn-success w-100 mb-4" onclick="addChannel()">+ Add Channel</button>
@@ -457,7 +460,7 @@
           previewDiv.className = "channel-preview";
           previewDiv.innerHTML = `
             <img src="${ch.logo}" alt="Logo">
-            <span>${ch.name}</span>
+            <span>${ch.name} ${ch.group ? `(${ch.group})` : ''}</span>
             <button class="delete-btn" onclick="confirmRemoveChannel(${index})">
                 <i class="fas fa-times"></i> </button>
           `;
@@ -478,6 +481,7 @@
       const url = document.getElementById("channelURL").value.trim();
       const customLogo = document.getElementById("channelLogo").value.trim();
       const globalLogo = document.getElementById("logoAll").value.trim();
+      const group = document.getElementById("channelGroup").value.trim(); // Added group
 
       if (!name || !url) {
         alert("Channel name and URL are required!");
@@ -486,7 +490,7 @@
 
       const finalLogo = customLogo || globalLogo || "https://via.placeholder.com/30";
 
-      currentChannels.push({ name, url, logo: finalLogo });
+      currentChannels.push({ name, url, logo: finalLogo, group: group }); // Group added here
       saveCurrentChannels(); // এখানে অটো-সেভ ট্রিগার হবে
       renderCurrentChannels();
 
@@ -494,6 +498,7 @@
       document.getElementById("channelName").value = "";
       document.getElementById("channelURL").value = "";
       document.getElementById("channelLogo").value = "";
+      document.getElementById("channelGroup").value = ""; // Clear group input
     }
 
     function removeChannel(index) {
@@ -514,7 +519,7 @@
     function generateM3U() {
       let output = "#EXTM3U\n";
       currentChannels.forEach(ch => {
-        output += `#EXTINF:-1 tvg-logo="${ch.logo}",${ch.name}\n${ch.url}\n`;
+        output += `#EXTINF:-1 tvg-logo="${ch.logo}"${ch.group ? ` group-title="${ch.group}"` : ''},${ch.name}\n${ch.url}\n`;
       });
       document.getElementById("output").value = output;
     }
