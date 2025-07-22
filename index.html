@@ -341,20 +341,22 @@
       <input type="text" id="logoAll" class="form-control" placeholder="https://example.com/logo.png" />
     </div>
 
+    <div class="mb-3">
+      <label class="form-label">🗂️ Global Group Name (default for all channels)</label>
+      <input type="text" id="globalGroup" class="form-control" placeholder="e.g., Movies, Sports, News" />
+    </div>
+
     <div class="row g-2 mb-3">
-      <div class="col-md-3">
+      <div class="col-md-4">
         <input id="channelName" class="form-control" placeholder="📺 Channel Name" />
       </div>
-      <div class="col-md-3">
+      <div class="col-md-4">
         <input id="channelURL" class="form-control" placeholder="🔗 Stream URL" />
       </div>
-      <div class="col-md-3">
+      <div class="col-md-4">
         <input id="channelLogo" class="form-control" placeholder="🖼️ Optional Logo URL" />
       </div>
-      <div class="col-md-3">
-        <input id="channelGroup" class="form-control" placeholder="🗂️ Global Group (e.g., Movies)" />
       </div>
-    </div>
     <button class="btn btn-success w-100 mb-4" onclick="addChannel()">+ Add Channel</button>
 
     <div id="previewList" class="mb-4">
@@ -481,7 +483,7 @@
       const url = document.getElementById("channelURL").value.trim();
       const customLogo = document.getElementById("channelLogo").value.trim();
       const globalLogo = document.getElementById("logoAll").value.trim();
-      const group = document.getElementById("channelGroup").value.trim(); // Added group
+      const globalGroup = document.getElementById("globalGroup").value.trim(); // গ্লোবাল গ্রুপ ইনপুট থেকে মান নেওয়া হয়েছে
 
       if (!name || !url) {
         alert("Channel name and URL are required!");
@@ -489,8 +491,9 @@
       }
 
       const finalLogo = customLogo || globalLogo || "https://via.placeholder.com/30";
+      const finalGroup = globalGroup; // এখন শুধু গ্লোবাল গ্রুপ ব্যবহার করা হচ্ছে
 
-      currentChannels.push({ name, url, logo: finalLogo, group: group }); // Group added here
+      currentChannels.push({ name, url, logo: finalLogo, group: finalGroup }); // গ্লোবাল গ্রুপ যোগ করা হয়েছে
       saveCurrentChannels(); // এখানে অটো-সেভ ট্রিগার হবে
       renderCurrentChannels();
 
@@ -498,7 +501,7 @@
       document.getElementById("channelName").value = "";
       document.getElementById("channelURL").value = "";
       document.getElementById("channelLogo").value = "";
-      document.getElementById("channelGroup").value = ""; // Clear group input
+      // document.getElementById("channelGroup").value = ""; // এই লাইনটি এখন আর প্রয়োজন নেই
     }
 
     function removeChannel(index) {
