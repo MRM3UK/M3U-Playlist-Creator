@@ -663,7 +663,10 @@
                     if (file.id) {
                         const fileName = file.name || `Channel ${channelCount}`; // Use filename, or fallback to sequential number
                         const fileApiUrl = `https://pixeldrain.com/api/file/${file.id}`;
-                        const logo = document.getElementById("logoAll").value.trim() || "https://via.placeholder.com/30";
+                        // Pixeldrain থাম্বনেইল URL তৈরি করুন
+                        const fileThumbnailUrl = `https://pixeldrain.com/api/file/${file.id}/thumbnail`; 
+                        
+                        const logo = fileThumbnailUrl; // থাম্বনেইলকে লোগো হিসেবে ব্যবহার করুন
                         const group = document.getElementById("globalGroup").value.trim();
 
                         addedChannelsFromFolder.push({
@@ -835,7 +838,7 @@
               nameInput.value = ""; // Clear name input
           }
           if (customLogo) {
-              alert("When adding a Pixeldrain folder, custom logo input will be ignored. Global logo will be used.");
+              alert("When adding a Pixeldrain folder, custom logo input will be ignored. Thumbnails will be used as logos.");
               logoInput.value = ""; // Clear logo input
           }
 
