@@ -610,6 +610,13 @@
     const TMDB_API_KEY = 'YOUR_TMDB_API_KEY'; // <--- এখানে আপনার TMDB API Key যোগ করুন!
     const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w200'; // ছোট লোগোর জন্য w200, বড় চাইলে w500 বা original
 
+    // List of common video file extensions
+    const videoFileExtensions = [
+        '.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mpeg', '.mpg', '.3gp',
+        '.ts', '.m2ts', '.ogg', '.ogv', '.f4v', '.swf', '.vob', '.qt', '.rm', '.rmvb',
+        '.divx', '.xvid', '.m4v', '.asf', '.dat', '.evo', '.hevc', '.h264', '.h265'
+    ];
+
     // Helper function to convert Pixeldrain file URL (u/ to api/file/)
     function convertPixeldrainFileUrl(originalUrl) {
         const pixeldrainFileRegex = /^https:\/\/pixeldrain\.com\/u\/([a-zA-Z0-9]+)$/;
@@ -660,7 +667,9 @@
                 let channelCount = currentChannels.length + 1; // Start numbering from existing channels + 1
 
                 for (const file of data.files) {
-                    if (file.id) {
+                    // Check if the file has a video extension
+                    const fileExtension = file.name ? '.' + file.name.split('.').pop().toLowerCase() : '';
+                    if (file.id && videoFileExtensions.includes(fileExtension)) {
                         const fileName = file.name || `Channel ${channelCount}`; // Use filename, or fallback to sequential number
                         const fileApiUrl = `https://pixeldrain.com/api/file/${file.id}`;
                         // Pixeldrain থাম্বনেইল URL তৈরি করুন
@@ -677,6 +686,9 @@
                         });
                         channelCount++;
                     }
+                }
+                if (addedChannelsFromFolder.length === 0) {
+                    alert("No video files found in the Pixeldrain folder.");
                 }
             } else {
                 alert("No files found in the Pixeldrain folder.");
@@ -847,7 +859,7 @@
               currentChannels.push(...channelsFromFolder); // Add all channels from folder
               saveCurrentChannels();
               renderCurrentChannels();
-              alert(`Added ${channelsFromFolder.length} channels from Pixeldrain folder!`);
+              alert(`Added ${channelsFromFolder.length} video channels from Pixeldrain folder!`);
           }
           urlInput.value = ""; // Clear URL input after processing folder
           return; // Exit as folder processing handles adding channels
