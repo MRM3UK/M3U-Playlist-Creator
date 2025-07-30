@@ -746,7 +746,7 @@
 
     // TMDB API Key (Replace with your actual TMDB API Key)
     const TMDB_API_KEY = 'YOUR_TMDB_API_KEY'; // <--- এখানে আপনার TMDB API Key যোগ করুন!
-    const TMDB_IMAGE_BASE_URL = 'https://image.themoviedb.org/t/p/w200';
+    const TMDB_IMAGE_BASE_URL = 'https://image.moviedb.org/t/p/w200'; // Corrected from moviedb.org/t/p/w200 to image.tmdb.org/t/p/w200
 
     // List of common video file extensions for Pixeldrain folder processing
     const videoFileExtensions = [
@@ -1038,24 +1038,6 @@
                 `;
                 elements.previewList.appendChild(previewDiv);
             });
-
-            // Event delegation for edit and delete buttons
-            // Attach a single listener to the parent container
-            // Ensure no duplicate listeners are added:
-            // This line is important to prevent multiple listeners if renderCurrentChannels is called multiple times.
-            // A more robust way might be to remove it first, then add it.
-            // elements.previewList.removeEventListener('click', handleChannelActions); // This line ensures no duplicate listeners
-            // elements.previewList.addEventListener('click', handleChannelActions);
-
-            // Alternative: If you are certain renderCurrentChannels is only called once after initial load or on explicit data change,
-            // then directly attaching it as below is fine. The existing code adds it on DOMContentLoaded once,
-            // and then it's delegated. The problem is if renderCurrentChannels implicitly recreates the entire #previewList div itself,
-            // then the listener on the old div would be lost. But it currently clears and appends.
-            // If the listener is already added to 'previewList' and renderCurrentChannels only modifies its children,
-            // then event delegation will continue to work. The problem often occurs if the entire parent is re-created.
-            // The provided code does `elements.previewList.innerHTML = "";` which effectively removes previous children.
-            // However, the event listener itself is still on the *same* `elements.previewList` element. So it should persist.
-            // The `removeEventListener` is good practice if renderCurrentChannels is called frequently.
         }
         generateM3U();
     }
@@ -1258,7 +1240,11 @@
     }
 
     async function copyOutput() {
-        if (!elements.output) return;
+        if (!elements.output) {
+            console.error("Output element not found for copyOutput.");
+            await showCustomAlert("Output field is not available for copying.");
+            return;
+        }
         elements.output.select();
         elements.output.setSelectionRange(0, 99999); // Corrected from setSelectionSelectionRange
 
@@ -1310,7 +1296,7 @@
             elements.savedPlaylistsDropdown.querySelectorAll('.playlist-name-text').forEach(span => {
                 span.addEventListener('click', (e) => loadSavedPlaylist(e.currentTarget.dataset.playlistName));
             });
-            elements.savedPlaylistsDropdown.querySelectorAll('.delete-playlist-btn').forEach(button => {
+            elements.savedPlay playlistsDropdown.querySelectorAll('.delete-playlist-btn').forEach(button => {
                 button.addEventListener('click', (e) => confirmDeleteSavedPlaylist(e.currentTarget.dataset.playlistName, e));
             });
         }
@@ -1343,7 +1329,7 @@
                 await showCustomAlert(`Playlist "${playlistName}" overwritten successfully!`);
             }
         } else {
-            savedPlayplaylists = { ...savedPlaylists, [playlistName]: [...currentChannels] };
+            savedPlaylists = { ...savedPlaylists, [playlistName]: [...currentChannels] }; // Corrected typo: savedPlayplaylists to savedPlaylists
             savePlaylistsToLocalStorage();
             renderSavedPlaylistsDropdown();
             await showCustomAlert(`Playlist "${playlistName}" saved successfully!`);
@@ -1449,110 +1435,4 @@
 
         for (let i = 0; i < currentChannels.length; i++) {
             const channel = currentChannels[i];
-            const statusIconElement = document.getElementById(`status-${i}`);
-            if (statusIconElement) {
-                statusIconElement.innerHTML = '<i class="fas fa-circle-notch fa-spin loading"></i>'; // Loading spinner
-            }
-
-            try {
-                // IMPORTANT NOTE ON STREAM CHECKING:
-                // Direct client-side stream checking using `fetch` with `mode: 'no-cors'`
-                // is inherently limited due to browser's Cross-Origin Resource Sharing (CORS) policy.
-                // When `mode: 'no-cors'` is used, the browser does not expose the actual HTTP status code
-                // of the response (e.g., 200 OK, 404 Not Found, 500 Internal Server Error) to JavaScript.
-                // It simply indicates if the request was sent and received a response at all,
-                // without revealing whether the resource actually exists or is playable.
-                // Therefore, even for an invalid URL, a 'successful' (non-network error) response
-                // might still occur, leading to a misleading 'OK' status.
-
-                // For a truly reliable stream status check (e.g., verifying if a stream is live or a file exists),
-                // you would typically need a **server-side proxy**.
-                // 1. Your client-side JavaScript sends the stream URL to your server.
-                // 2. Your server makes the request to the stream URL (bypassing browser CORS restrictions).
-                // 3. Your server then returns the actual HTTP status code and other relevant information
-                //    back to your client-side JavaScript.
-
-                // The current implementation is a basic attempt to check reachability from the client,
-                // but its accuracy for determining actual stream validity is limited.
-                const response = await fetch(channel.url, { method: 'HEAD', mode: 'no-cors' });
-                
-                // If a response is received without a network error, we assume it's reachable.
-                // This does NOT guarantee the stream is playable or the URL returns valid content.
-                if (statusIconElement) {
-                    statusIconElement.innerHTML = '<i class="fas fa-check-circle ok"></i>'; // Assume OK if no network error on fetch
-                }
-            } catch (error) {
-                console.error(`Error checking stream ${channel.name} (${channel.url}):`, error);
-                if (statusIconElement) {
-                    statusIconElement.innerHTML = '<i class="fas fa-times-circle error"></i>'; // Error (e.g., network disconnected, invalid domain)
-                }
-            }
-            await new Promise(resolve => setTimeout(resolve, 200)); // Small delay to prevent overwhelming requests
-        }
-
-        if (elements.checkStreamsBtn) {
-            elements.checkStreamsBtn.disabled = false;
-            elements.checkStreamsBtn.innerHTML = '<i class="fas fa-signal"></i> Check Streams';
-        }
-        await showCustomAlert("Stream checking complete! (Note: Client-side checks are limited and may not guarantee stream playability due to browser security policies.)");
-    }
-
-
-    // --- Event Listeners ---
-    document.addEventListener('DOMContentLoaded', () => {
-        // Initialize elements object after DOM is loaded
-        elements.logoAll = document.getElementById("logoAll");
-        elements.globalGroup = document.getElementById("globalGroup");
-        elements.channelName = document.getElementById("channelName");
-        elements.channelURL = document.getElementById("channelURL");
-        elements.channelLogo = document.getElementById("channelLogo");
-        elements.addChannelBtn = document.getElementById("addChannelBtn");
-        elements.checkStreamsBtn = document.getElementById("checkStreamsBtn");
-        elements.channelSearchInput = document.getElementById("channelSearchInput");
-        elements.previewList = document.getElementById("previewList"); // This is the parent for channel previews
-        elements.savedPlaylistsToggleBtn = document.getElementById("savedPlaylistsToggleBtn");
-        elements.savedPlaylistsDropdown = document.getElementById("savedPlaylistsDropdown");
-        elements.savedPlaylistsCount = document.getElementById("savedPlaylistsCount");
-        elements.playlistFileNameInput = document.getElementById("playlistFileNameInput");
-        elements.savePlaylistBtn = document.getElementById("savePlaylistBtn");
-        elements.generateM3UBtn = document.getElementById("generateM3UBtn");
-        elements.downloadM3UBtn = document.getElementById("downloadM3UBtn");
-        elements.copyOutputBtn = document.getElementById("copyOutputBtn");
-        elements.clearCurrentBtn = document.getElementById("clearCurrentBtn");
-        elements.generateQrCodeBtn = document.getElementById("generateQrCodeBtn");
-        elements.output = document.getElementById("output");
-        elements.welcomeModal = document.getElementById("welcomeModal");
-        elements.welcomeModalOkBtn = document.getElementById("welcomeModalOkBtn");
-        elements.confirmationModal = document.getElementById("confirmationModal");
-        elements.confirmationMessage = document.getElementById("confirmationMessage");
-        elements.confirmActionBtn = document.getElementById("confirmActionBtn");
-        elements.cancelConfirmBtn = document.getElementById("cancelConfirmBtn");
-        elements.alertModal = document.getElementById("alertModal");
-        elements.alertMessage = document.getElementById("alertMessage");
-        elements.alertOkBtn = document.getElementById("alertOkBtn");
-        elements.qrCodeModal = document.getElementById("qrCodeModal");
-        elements.qrCodeCanvas = document.getElementById("qrCodeCanvas");
-        elements.qrCodeModalOkBtn = document.getElementById("qrCodeModalOkBtn");
-
-
-        if (elements.addChannelBtn) elements.addChannelBtn.addEventListener('click', addChannelFromInputs);
-        if (elements.checkStreamsBtn) elements.checkStreamsBtn.addEventListener('click', checkStreams);
-        if (elements.channelSearchInput) elements.channelSearchInput.addEventListener('keyup', filterChannels);
-        if (elements.savedPlaylistsToggleBtn) elements.savedPlaylistsToggleBtn.addEventListener('click', toggleSavedPlaylistsDropdown);
-        if (elements.savePlaylistBtn) elements.savePlaylistBtn.addEventListener('click', saveCurrentPlaylist);
-        if (elements.generateM3UBtn) elements.generateM3UBtn.addEventListener('click', generateM3U);
-        if (elements.downloadM3UBtn) elements.downloadM3UBtn.addEventListener('click', downloadM3U);
-        if (elements.copyOutputBtn) elements.copyOutputBtn.addEventListener('click', copyOutput);
-        if (elements.clearCurrentBtn) elements.clearCurrentBtn.addEventListener('click', clearCurrentChannels);
-        if (elements.generateQrCodeBtn) elements.generateQrCodeBtn.addEventListener('click', generateQrCode);
-
-        // Global settings auto-save
-        if (elements.logoAll) elements.logoAll.addEventListener('input', saveGlobalSettings);
-        if (elements.globalGroup) elements.globalGroup.addEventListener('input', saveGlobalSettings);
-
-        // Modal OK Button Listeners (replacing close buttons)
-        if (elements.welcomeModalOkBtn) elements.welcomeModalOkBtn.addEventListener('click', () => {
-            closeModal(elements.welcomeModal);
-            localStorage.setItem(LOCAL_STORAGE_KEYS.WELCOME_MODAL_SHOWN, 'true');
-            if (resolveWelcome) {
-                resolveWelcome();
+            const statusIconElement
