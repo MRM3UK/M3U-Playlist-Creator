@@ -6,136 +6,175 @@
   <title>EXTM3U Playlist Creator</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+
   <style>
+    /* CSS Variables for colors */
+    :root {
+      --bg-dark: #121212;
+      --bg-container: #1e1e1e;
+      --bg-input: #2c2c2c;
+      --text-light: #f8f8f8;
+      --text-medium: #e0e0e0;
+      --text-dark: #bdbdbd;
+      --text-placeholder: #777;
+      --accent-blue: #64b5f6; /* Primary accent */
+      --accent-blue-dark: #42a5f5; /* Darker accent on hover/focus */
+      --btn-success: #4caf50;
+      --btn-success-hover: #43a047;
+      --btn-info: #2196f3;
+      --btn-info-hover: #1976d2;
+      --btn-dark: #424242;
+      --btn-dark-hover: #333333;
+      --btn-secondary: #757575;
+      --btn-secondary-hover: #616161;
+      --btn-primary: #3f51b5;
+      --btn-primary-hover: #303f9f;
+      --btn-copy: #607d8b;
+      --btn-copy-hover: #455a64;
+      --red-error: #dc3545;
+      --red-error-hover: #c82333;
+      --yellow-warning: #ffc107;
+      --yellow-warning-hover: #e0a800;
+      --border-color: #333;
+      --shadow-dark: rgba(0, 0, 0, 0.5);
+      --shadow-medium: rgba(0, 0, 0, 0.6);
+      --shadow-light: rgba(0, 0, 0, 0.3);
+      --modal-bg-overlay: rgba(0,0,0,0.8);
+    }
+
     body {
-      background-color: #121212; /* গাঢ় কালো ব্যাকগ্রাউন্ড */
-      font-family: 'Segoe UI', sans-serif;
-      color: #f8f8f8; /* উজ্জ্বল সাদা টেক্সট */
-      padding: 15px; /* মোবাইল ফ্রেন্ডলি করার জন্য প্যাডিং */
+      background-color: var(--bg-dark);
+      font-family: 'Roboto', sans-serif;
+      color: var(--text-light);
+      padding: 15px;
+      line-height: 1.6;
     }
     .container {
-      background-color: #1e1e1e; /* সামান্য হালকা কালো কন্টেইনার */
+      background-color: var(--bg-container);
       border-radius: 20px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* গাঢ় শ্যাডো */
+      box-shadow: 0 0 25px var(--shadow-dark);
       padding: 35px;
-      margin-top: 20px; /* মার্জিন কমানো */
-      margin-bottom: 20px; /* মার্জিন কমানো */
+      margin-top: 20px;
+      margin-bottom: 20px;
     }
     h3 {
-      color: #e0e0e0;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-      font-weight: 600;
+      font-family: 'Poppins', sans-serif;
+      color: var(--text-medium);
+      text-shadow: 1px 1px 3px var(--shadow-dark);
+      font-weight: 700;
       text-align: center;
       margin-bottom: 25px;
+      letter-spacing: 1px;
     }
     .form-label {
-        color: #bdbdbd;
+        color: var(--text-dark);
         font-weight: 500;
         margin-bottom: 8px;
+        letter-spacing: 0.5px;
     }
     .form-control, .btn {
-      border-radius: 10px;
-      transition: all 0.2s ease-in-out;
-      border: 1px solid #333;
-      font-size: 1rem; /* ফন্ট সাইজ সামঞ্জস্য করা */
+      border-radius: 12px;
+      transition: all 0.3s ease-in-out;
+      border: 1px solid var(--border-color);
+      font-size: 1rem;
     }
     .form-control {
-      background-color: #2c2c2c;
-      color: #f0f0f0;
-      padding: 12px 18px;
+      background-color: var(--bg-input);
+      color: var(--text-light);
+      padding: 14px 18px;
     }
     .form-control::placeholder {
-        color: #777;
+        color: var(--text-placeholder);
     }
     .form-control:focus {
       outline: none;
-      border-color: #64b5f6; /* হালকা নীল ফোকাস */
-      box-shadow: 0 0 5px rgba(100, 181, 246, 0.5);
-      background-color: #383838; /* ফোকাসে কিছুটা গাঢ় ব্যাকগ্রাউন্ড */
-      color: #ffffff; /* ফোকাসে সাদা লেখা */
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 8px rgba(100, 181, 246, 0.6);
+      background-color: var(--bg-input);
+      color: var(--text-light);
     }
     .btn {
-      padding: 12px 20px; /* প্যাডিং সামঞ্জস্য করা */
+      padding: 14px 22px;
       font-weight: bold;
-      letter-spacing: 0.8px;
+      letter-spacing: 1px;
       text-transform: uppercase;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 3px 8px var(--shadow-medium);
       cursor: pointer;
+      background-image: linear-gradient(to bottom, var(--btn-primary), var(--btn-primary-hover));
+      border: none;
+      color: #fff;
     }
-    .btn i { /* আইকনের মার্জিন */
-        margin-right: 8px;
+    .btn i {
+        margin-right: 10px;
     }
     .btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 7px rgba(0, 0, 0, 0.7);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 12px var(--shadow-dark);
+      opacity: 0.95;
     }
     .btn:active {
-        transform: translateY(1px);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+        transform: translateY(0);
+        box-shadow: 0 1px 5px var(--shadow-dark);
     }
-    .btn-success {
-      background-color: #4caf50;
-      color: #fff;
-    }
-    .btn-info {
-      background-color: #2196f3;
-      color: #fff;
-    }
-    .btn-dark {
-      background-color: #424242;
-      color: #fff;
-    }
-    .btn-secondary {
-        background-color: #757575;
+    /* Specific button styles with gradients */
+    .btn-success { background-image: linear-gradient(to bottom, var(--btn-success), var(--btn-success-hover)); }
+    .btn-success:hover { background-image: linear-gradient(to top, var(--btn-success), var(--btn-success-hover)); }
+    .btn-info { background-image: linear-gradient(to bottom, var(--btn-info), var(--btn-info-hover)); }
+    .btn-info:hover { background-image: linear-gradient(to top, var(--btn-info), var(--btn-info-hover)); }
+    .btn-dark { background-image: linear-gradient(to bottom, var(--btn-dark), var(--btn-dark-hover)); }
+    .btn-dark:hover { background-image: linear-gradient(to top, var(--btn-dark), var(--btn-dark-hover)); }
+    .btn-secondary { background-image: linear-gradient(to bottom, var(--btn-secondary), var(--btn-secondary-hover)); }
+    .btn-secondary:hover { background-image: linear-gradient(to top, var(--btn-secondary), var(--btn-secondary-hover)); }
+    .btn-primary { background-image: linear-gradient(to bottom, var(--btn-primary), var(--btn-primary-hover)); }
+    .btn-primary:hover { background-image: linear-gradient(to top, var(--btn-primary), var(--btn-primary-hover)); }
+    .btn-copy { background-image: linear-gradient(to bottom, var(--btn-copy), var(--btn-copy-hover)); }
+    .btn-copy:hover { background-image: linear-gradient(to top, var(--btn-copy), var(--btn-copy-hover)); }
+
+    /* Stream Status Specific Styles */
+    .btn-check-stream {
+        background-color: #ff9800; /* Orange */
         color: #fff;
     }
-    .btn-primary {
-        background-color: #3f51b5;
-        color: #fff;
-    }
-    .btn-copy { /* নতুন কপি বাটনের স্টাইল */
-        background-color: #607d8b; /* গাঢ় নীল-ধূসর */
-        color: #fff;
-    }
-    .btn-copy:hover {
-        background-color: #455a64;
+    .btn-check-stream:hover {
+        background-color: #fb8c00;
     }
 
-    /* চ্যানেল গ্রিড লেআউট এবং বক্স */
     .channel-list-box {
-        background-color: #2c2c2c; /* আউটপুট বক্সের মতো ব্যাকগ্রাউন্ড */
-        border-radius: 10px;
-        border: 1px solid #444;
-        padding: 15px;
+        background-color: var(--bg-input);
+        border-radius: 15px;
+        border: 1px solid var(--border-color);
+        padding: 20px;
         margin-bottom: 25px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        box-shadow: 0 3px 10px var(--shadow-medium);
     }
-
     .channel-list-box .header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 15px;
-        flex-wrap: wrap; /* ছোট স্ক্রিনের জন্য */
+        margin-bottom: 20px;
+        flex-wrap: wrap;
     }
     .channel-list-box .header h5 {
         margin: 0;
-        color: #e0e0e0;
+        color: var(--text-medium);
         font-weight: 600;
         flex-grow: 1;
-        min-width: 150px; /* ছোট স্ক্রিনে যাতে ঠিক থাকে */
+        min-width: 150px;
+        font-family: 'Poppins', sans-serif;
     }
     .channel-list-box .header .search-box {
         display: flex;
         gap: 10px;
-        flex-grow: 1; /* সার্চ বার যাতে প্রসারিত হয় */
-        max-width: 300px; /* সর্বোচ্চ প্রস্থ */
+        flex-grow: 1;
+        max-width: 350px;
     }
     @media (max-width: 576px) {
         .channel-list-box .header {
             flex-direction: column;
             align-items: flex-start;
-            gap: 10px;
+            gap: 15px;
         }
         .channel-list-box .header .search-box {
             width: 100%;
@@ -145,174 +184,177 @@
 
     #previewList {
         display: flex;
-        flex-direction: column; /* চ্যানেলগুলো উল্লম্বভাবে থাকবে */
-        gap: 10px; /* চ্যানেলগুলির মধ্যে ফাঁকা স্থান */
-        max-height: 300px; /* নির্দিষ্ট উচ্চতা */
-        overflow-y: auto; /* উচ্চতা বেশি হলে স্ক্রলবার */
-        padding-right: 5px; /* স্ক্রলবার এর জন্য প্যাডিং */
+        flex-direction: column;
+        gap: 12px;
+        max-height: 320px;
+        overflow-y: auto;
+        padding-right: 8px;
     }
 
-    /* কাস্টম স্ক্রলবার */
-    #previewList::-webkit-scrollbar {
-        width: 8px;
-    }
-    #previewList::-webkit-scrollbar-track {
-        background: #333;
-        border-radius: 10px;
-    }
+    /* Custom Scrollbar */
+    #previewList::-webkit-scrollbar { width: 10px; }
+    #previewList::-webkit-scrollbar-track { background: var(--border-color); border-radius: 10px; }
     #previewList::-webkit-scrollbar-thumb {
-        background-color: #64b5f6;
+        background-color: var(--accent-blue);
         border-radius: 10px;
-        border: 2px solid #333;
+        border: 2px solid var(--bg-input);
     }
-    #previewList::-webkit-scrollbar-thumb:hover {
-        background-color: #42a5f5;
-    }
-
+    #previewList::-webkit-scrollbar-thumb:hover { background-color: var(--accent-blue-dark); }
 
     .channel-preview {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 8px 12px; /* প্যাডিং সামঞ্জস্য করা */
-      background-color: #1e1e1e; /* কন্টেইনারের মতো ব্যাকগ্রাউন্ড */
-      border-radius: 8px;
-      border: 1px solid #333;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      gap: 15px;
+      padding: 10px 15px;
+      background-color: var(--bg-container);
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 5px var(--shadow-light);
+      transition: all 0.2s ease-in-out;
+    }
+    .channel-preview:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px var(--shadow-medium);
     }
     .channel-preview img {
-      height: 30px; /* লোগোর আকার সামঞ্জস্য করা */
-      width: 30px; /* লোগোর আকার সামঞ্জস্য করা */
+      height: 35px;
+      width: 35px;
       object-fit: contain;
-      border-radius: 6px;
-      background-color: #383838;
-      padding: 3px;
+      border-radius: 8px;
+      background-color: var(--border-color);
+      padding: 4px;
       flex-shrink: 0;
     }
     .channel-preview span {
       font-weight: 400;
-      color: #e0e0e0;
+      color: var(--text-medium);
       flex-grow: 1;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
-      font-size: 0.95rem;
+      font-size: 1rem;
     }
 
-    /* ডিলিট ও এডিট বাটন */
+    /* Action buttons */
     .channel-preview .action-buttons {
         display: flex;
-        gap: 5px;
+        gap: 8px;
         flex-shrink: 0;
     }
     .channel-preview .action-buttons button {
       background: none;
       border: none;
-      border-radius: 50%; /* গোলাকার বাটন */
-      width: 28px; /* ছোট আকার */
-      height: 28px; /* ছোট আকার */
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 1em; /* আইকনের আকার */
+      font-size: 1.1em;
       cursor: pointer;
       transition: all 0.2s ease-in-out;
     }
-    .channel-preview .delete-btn {
-        color: #dc3545;
+    .channel-preview .delete-btn { color: var(--red-error); }
+    .channel-preview .delete-btn:hover { background-color: rgba(220, 53, 69, 0.25); transform: scale(1.15); }
+    .channel-preview .edit-btn { color: var(--yellow-warning); }
+    .channel-preview .edit-btn:hover { background-color: rgba(255, 193, 7, 0.25); transform: scale(1.15); }
+
+    /* Stream Status Icon */
+    .channel-preview .status-icon {
+        margin-left: auto; /* Push to the right */
+        font-size: 1.2em;
+        width: 24px;
+        text-align: center;
     }
-    .channel-preview .delete-btn:hover {
-        background-color: rgba(220, 53, 69, 0.2);
-        transform: scale(1.1);
-    }
-    .channel-preview .edit-btn {
-        color: #ffc107; /* হলুদ রং */
-    }
-    .channel-preview .edit-btn:hover {
-        background-color: rgba(255, 193, 7, 0.2);
-        transform: scale(1.1);
-    }
+    .status-icon.loading { color: #f0ad4e; } /* Orange-yellow for loading */
+    .status-icon.ok { color: #5cb85c; } /* Green for OK */
+    .status-icon.error { color: #d9534f; } /* Red for Error */
 
     textarea {
       width: 100%;
-      height: 200px;
-      font-family: monospace;
+      height: 220px;
+      font-family: 'Roboto Mono', monospace;
       margin-top: 20px;
-      border-radius: 10px;
-      background-color: #2c2c2c;
-      color: #f0f0f0;
+      border-radius: 12px;
+      background-color: var(--bg-input);
+      color: var(--text-light);
       padding: 18px;
-      border: 1px solid #444;
+      border: 1px solid var(--border-color);
       resize: vertical;
+      line-height: 1.5;
     }
     textarea:focus {
       outline: none;
-      border-color: #64b5f6;
-      box-shadow: 0 0 5px rgba(100, 181, 246, 0.5);
-      background-color: #383838;
-      color: #ffffff;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 8px rgba(100, 181, 246, 0.6);
+      background-color: var(--bg-input);
+      color: var(--text-light);
     }
     h5 {
-        color: #bdbdbd;
+        color: var(--text-dark);
         font-weight: 600;
         margin-top: 30px;
         margin-bottom: 15px;
+        font-family: 'Poppins', sans-serif;
+        letter-spacing: 0.8px;
     }
     .footer {
       margin-top: 40px;
       text-align: center;
-      font-size: 14px;
-      color: #777;
-      text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.7);
+      font-size: 15px;
+      color: var(--text-placeholder);
+      text-shadow: 0.5px 0.5px 1px var(--shadow-dark);
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
     }
     .footer a {
-        color: #64b5f6;
+        color: var(--accent-blue);
         text-decoration: none;
+        font-weight: 500;
     }
     .footer a:hover {
         text-decoration: underline;
+        color: var(--accent-blue-dark);
     }
 
     /* Saved Playlists Styling */
     .dropdown {
         position: relative;
-        display: block; /* ডিসপ্লে ব্লক করা হয়েছে */
-        width: 100%; /* সম্পূর্ণ উইডথ নেবে */
-        margin-bottom: 25px; /* সেকশনের নিচে মার্জিন */
+        display: block;
+        width: 100%;
+        margin-bottom: 25px;
     }
     .dropdown > button {
-        width: 100%; /* মোবাইল ফ্রেন্ডলি */
+        width: 100%;
         text-align: left;
-        background-color: #3f51b5;
+        background-image: linear-gradient(to bottom, var(--btn-primary), var(--btn-primary-hover));
         color: #fff;
         border: none;
     }
     .dropdown > button:hover {
-        background-color: #303f9f;
+        background-image: linear-gradient(to top, var(--btn-primary), var(--btn-primary-hover));
     }
     .dropdown-content {
         display: none;
         position: absolute;
-        background-color: #2c2c2c;
-        min-width: 250px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-        border: 1px solid #444;
-        border-radius: 10px;
+        background-color: var(--bg-input);
+        min-width: 280px;
+        box-shadow: 0 5px 15px var(--shadow-dark);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
         z-index: 1;
-        max-height: 300px;
+        max-height: 350px;
         overflow-y: auto;
         left: 0;
-        right: 0; /* মোবাইল ফ্রেন্ডলি, পুরো উইডথ নেবে */
+        right: 0;
         top: 100%;
-        margin-top: 10px; /* Space from button */
+        margin-top: 12px;
         padding: 10px 0;
     }
-    .dropdown-content.show {
-        display: block;
-    }
+    .dropdown-content.show { display: block; }
     .dropdown-content button {
-        color: #f0f0f0;
-        padding: 10px 15px;
+        color: var(--text-light);
+        padding: 12px 18px;
         text-decoration: none;
         display: block;
         background: none;
@@ -321,16 +363,11 @@
         text-align: left;
         cursor: pointer;
         font-weight: 500;
-        border-bottom: 1px solid #444;
+        border-bottom: 1px solid var(--border-color);
         transition: background-color 0.2s ease, transform 0.2s ease;
     }
-    .dropdown-content button:last-child {
-        border-bottom: none;
-    }
-    .dropdown-content button:hover {
-        background-color: #333;
-        transform: translateX(5px);
-    }
+    .dropdown-content button:last-child { border-bottom: none; }
+    .dropdown-content button:hover { background-color: var(--border-color); transform: translateX(8px); }
     .dropdown-item-actions {
         display: flex;
         justify-content: space-between;
@@ -342,124 +379,140 @@
         text-align: left;
         padding: 10px 0;
         cursor: pointer;
-        color: #e0e0e0;
+        color: var(--text-medium);
+        font-size: 0.98rem;
     }
     .dropdown-item-actions .delete-playlist-btn {
         background: none;
         border: none;
-        color: #f44336;
-        font-size: 1.1em;
+        color: var(--red-error);
+        font-size: 1.2em;
         cursor: pointer;
-        opacity: 0.7;
-        transition: opacity 0.2s ease;
+        opacity: 0.8;
+        transition: opacity 0.2s ease, transform 0.2s ease;
         padding: 5px;
         border-radius: 5px;
     }
     .dropdown-item-actions .delete-playlist-btn:hover {
         opacity: 1;
-        background-color: rgba(244, 67, 54, 0.1);
+        background-color: rgba(244, 67, 54, 0.15);
+        transform: scale(1.1);
     }
 
     .playlist-actions-section {
-        margin-top: 20px;
-        padding: 20px;
+        margin-top: 25px;
+        padding: 25px;
         background-color: #252525;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        border-radius: 15px;
+        box-shadow: 0 3px 10px var(--shadow-medium);
     }
     .playlist-actions-section .form-control {
-        margin-bottom: 15px;
+        margin-bottom: 18px;
     }
 
-    /* নতুন বাটন লেআউট */
+    /* New button layout */
     .button-group-row {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 15px;
-        justify-content: center; /* বাটনগুলো সেন্টারে থাকবে */
+        gap: 12px;
+        margin-top: 18px;
+        justify-content: center;
     }
     .button-group-row .btn {
-        flex: 1 1 auto; /* ফ্লেক্স আইটেম হিসেবে আচরণ করবে */
-        min-width: 120px; /* ছোট স্ক্রিনেও নির্দিষ্ট চওড়া থাকবে */
+        flex: 1 1 auto;
+        min-width: 140px;
     }
-    @media (max-width: 576px) { /* Extra small devices (portrait phones) */
+    @media (max-width: 576px) {
         .button-group-row .btn {
-            width: 100%; /* প্রতিটি বাটন পুরো প্রস্থ নেবে */
+            width: 100%;
             flex-grow: 0;
         }
     }
 
     /* Modal (Popup) Styles */
     .modal {
-      display: none; /* Hidden by default */
-      position: fixed; /* Stay in place */
-      z-index: 1000; /* Sit on top */
+      display: none;
+      position: fixed;
+      z-index: 1000;
       left: 0;
       top: 0;
-      width: 100%; /* Full width */
-      height: 100%; /* Full height */
-      overflow: auto; /* Enable scroll if needed */
-      background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: var(--modal-bg-overlay);
       padding-top: 60px;
-      backdrop-filter: blur(5px); /* Add a blur effect */
+      backdrop-filter: blur(8px);
+      animation: fadeInOverlay 0.3s forwards;
     }
 
     .modal-content {
-      background-color: #1e1e1e;
-      margin: 5% auto; /* 5% from the top and centered */
-      padding: 30px;
-      border: 1px solid #444;
-      border-radius: 15px;
-      width: 80%; /* Could be more or less, depending on screen size */
-      max-width: 600px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+      background-color: var(--bg-container);
+      margin: 5% auto;
+      padding: 35px;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      width: 85%;
+      max-width: 650px;
+      box-shadow: 0 8px 20px var(--shadow-dark);
       position: relative;
-      animation: animatetop 0.4s;
+      animation: scaleUpAndFadeIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     }
 
-    /* Add Animation */
-    @keyframes animatetop {
-      from {top: -300px; opacity: 0}
-      to {top: 0; opacity: 1}
+    /* Modal Animations */
+    @keyframes fadeInOverlay {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    @keyframes scaleUpAndFadeIn {
+        from { transform: scale(0.8); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
     }
 
     .modal-content h4 {
-      color: #e0e0e0;
+      color: var(--text-medium);
       text-align: center;
-      margin-bottom: 20px;
-      font-weight: 600;
+      margin-bottom: 25px;
+      font-weight: 700;
+      font-family: 'Poppins', sans-serif;
+      letter-spacing: 0.8px;
+    }
+
+    .modal-content p {
+        color: var(--text-light);
+        line-height: 1.7;
     }
 
     .modal-content ul {
       list-style-type: none;
       padding: 0;
-      margin-bottom: 25px;
+      margin-bottom: 30px;
     }
 
     .modal-content ul li {
-      background-color: #2c2c2c;
-      margin-bottom: 10px;
-      padding: 12px 15px;
-      border-radius: 8px;
-      border: 1px solid #333;
-      color: #f0f0f0;
+      background-color: var(--bg-input);
+      margin-bottom: 12px;
+      padding: 15px 18px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      color: var(--text-light);
       display: flex;
       align-items: center;
-      font-size: 0.95rem;
+      font-size: 1rem;
+      box-shadow: 0 1px 4px var(--shadow-light);
     }
 
     .modal-content ul li i {
-      margin-right: 10px;
-      color: #64b5f6; /* Icon color */
+      margin-right: 12px;
+      color: var(--accent-blue);
+      font-size: 1.2em;
     }
 
     .modal-close-btn {
       color: #aaa;
       position: absolute;
-      top: 15px;
-      right: 25px;
-      font-size: 28px;
+      top: 20px;
+      right: 30px;
+      font-size: 32px;
       font-weight: bold;
       cursor: pointer;
       transition: 0.3s;
@@ -469,12 +522,13 @@
     .modal-close-btn:focus {
       color: #fff;
       text-decoration: none;
+      transform: scale(1.1);
     }
 
     .modal-footer-text {
         text-align: center;
-        color: #bbb;
-        font-size: 0.85rem;
+        color: var(--text-placeholder);
+        font-size: 0.9rem;
     }
 
     /* Responsive adjustments for modal */
@@ -482,20 +536,76 @@
         .modal-content {
             width: 95%;
             margin: 10% auto;
-            padding: 20px;
+            padding: 25px;
         }
         .modal-content h4 {
-            font-size: 1.3rem;
+            font-size: 1.4rem;
         }
         .modal-content ul li {
-            font-size: 0.9rem;
-            padding: 10px 12px;
+            font-size: 0.95rem;
+            padding: 12px 15px;
         }
         .modal-close-btn {
-            font-size: 24px;
-            top: 10px;
-            right: 15px;
+            font-size: 28px;
+            top: 15px;
+            right: 20px;
         }
+    }
+    
+    /* Confirmation Modal */
+    #confirmationModal .modal-content {
+        max-width: 450px;
+        padding: 25px;
+    }
+    #confirmationModal p {
+        text-align: center;
+        margin-bottom: 25px;
+        font-size: 1.1rem;
+        color: var(--text-medium);
+    }
+    #confirmationModal .button-group-row {
+        justify-content: space-around;
+        margin-top: 0;
+    }
+    #confirmationModal .button-group-row .btn {
+        min-width: 100px;
+    }
+
+    /* Alert Modal (re-using confirmation modal styles but with only one button) */
+    #alertModal .modal-content {
+        max-width: 450px;
+        padding: 25px;
+    }
+    #alertModal p {
+        text-align: center;
+        margin-bottom: 25px;
+        font-size: 1.1rem;
+        color: var(--text-medium);
+    }
+    #alertModal .button-group-row {
+        justify-content: center;
+        margin-top: 0;
+    }
+    #alertModal .button-group-row .btn {
+        min-width: 120px;
+    }
+
+
+    /* QR Code Modal Specific */
+    #qrCodeCanvas {
+        display: block;
+        margin: 20px auto 0 auto;
+        max-width: 80%;
+        height: auto;
+        border-radius: 10px;
+        background-color: #fff; /* QR code needs a light background */
+        padding: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+    #qrCodeMessage {
+        text-align: center;
+        margin-top: 15px;
+        color: var(--text-dark);
     }
   </style>
 </head>
@@ -504,65 +614,75 @@
     <h3 class="text-center mb-4">📺 EXTM3U Playlist Creator</h3>
 
     <div class="mb-3">
-      <label class="form-label">🌐 Global Logo URL (default for all)</label>
+      <label class="form-label" for="logoAll">🌐 Global Logo URL (default for all)</label>
       <input type="text" id="logoAll" class="form-control" placeholder="https://example.com/logo.png" />
     </div>
 
     <div class="mb-3">
-      <label class="form-label">🗂️ Global Group Name (default for all channels)</label>
+      <label class="form-label" for="globalGroup">🗂️ Global Group Name (default for all channels)</label>
       <input type="text" id="globalGroup" class="form-control" placeholder="e.g., Movies, Sports, News" />
     </div>
 
     <div class="row g-2 mb-3">
       <div class="col-md-4">
-        <input id="channelName" class="form-control" placeholder="📺 Channel Name" />
+        <input type="text" id="channelName" class="form-control" placeholder="📺 Channel Name" />
       </div>
       <div class="col-md-4">
-        <input id="channelURL" class="form-control" placeholder="🔗 Stream URL (or Pixeldrain Folder Link)" />
+        <input type="text" id="channelURL" class="form-control" placeholder="🔗 Stream URL (or Pixeldrain Folder Link)" />
       </div>
       <div class="col-md-4">
-        <input id="channelLogo" class="form-control" placeholder="🖼️ Optional Logo URL" />
+        <input type="text" id="channelLogo" class="form-control" placeholder="🖼️ Optional Logo URL" />
       </div>
     </div>
-    <button class="btn btn-success w-100 mb-4" onclick="addChannel()">+ Add Channel</button>
+    <div class="button-group-row mb-4">
+        <button class="btn btn-success" id="addChannelBtn">
+            <i class="fas fa-plus-circle"></i> Add Channel
+        </button>
+        <button class="btn btn-check-stream" id="checkStreamsBtn">
+            <i class="fas fa-signal"></i> Check Streams
+        </button>
+    </div>
 
     <div class="channel-list-box">
         <div class="header">
             <h5>📊 Added Channels</h5>
             <div class="search-box">
-                <input type="text" id="channelSearchInput" class="form-control" placeholder="🔍 Search channels..." onkeyup="filterChannels()">
+                <input type="text" id="channelSearchInput" class="form-control" placeholder="🔍 Search channels...">
             </div>
         </div>
         <div id="previewList" class="mb-4">
-            <p style="text-align: center; color: #777; padding: 20px; width: 100%;">No channels added yet.</p>
+            <p style="text-align: center; color: var(--text-placeholder); padding: 20px; width: 100%;">No channels added yet.</p>
         </div>
     </div>
     <div class="mb-3">
         <div class="dropdown">
-            <button class="btn btn-primary" onclick="toggleSavedPlaylistsDropdown()">
+            <button class="btn btn-primary" id="savedPlaylistsToggleBtn">
                 <i class="fas fa-list-ul"></i> Saved Playlists <span id="savedPlaylistsCount"></span>
             </button>
             <div id="savedPlaylistsDropdown" class="dropdown-content">
-                <p style="padding: 10px 15px; color: #777;">No saved playlists yet.</p>
+                <p style="padding: 10px 15px; color: var(--text-placeholder); margin: 0;">No saved playlists yet.</p>
             </div>
         </div>
     </div>
 
     <div class="playlist-actions-section">
-        <label class="form-label">📝 Playlist Name (for saving & downloading)</label>
+        <label class="form-label" for="playlistFileNameInput">📝 Playlist Name (for saving & downloading)</label>
         <input type="text" id="playlistFileNameInput" class="form-control" placeholder="Enter playlist name (e.g., MyChannels)" value="playlist" />
 
         <div class="button-group-row">
-            <button class="btn btn-primary" onclick="saveCurrentPlaylist()">
+            <button class="btn btn-primary" id="savePlaylistBtn">
                 <i class="fas fa-save"></i> Save Playlist
             </button>
-            <button class="btn btn-info" onclick="generateM3U()">
+            <button class="btn btn-info" id="generateM3UBtn">
                 <i class="fas fa-cogs"></i> Generate
             </button>
-            <button class="btn btn-dark" onclick="downloadM3U()">
+            <button class="btn btn-dark" id="downloadM3UBtn">
                 <i class="fas fa-download"></i> Download
             </button>
-            <button class="btn btn-secondary" onclick="clearCurrentChannels()">
+            <button class="btn btn-copy" id="generateQrCodeBtn">
+                <i class="fas fa-qrcode"></i> Generate QR
+            </button>
+            <button class="btn btn-secondary" id="clearCurrentBtn">
                 <i class="fas fa-trash-alt"></i> Clear Current
             </button>
         </div>
@@ -570,67 +690,187 @@
 
     <h5>📄 Output</h5>
     <textarea id="output" readonly></textarea>
-    <button class="btn btn-copy w-100 mt-3" onclick="copyOutput()"><i class="fas fa-copy"></i> Copy Output</button>
+    <button class="btn btn-copy w-100 mt-3" id="copyOutputBtn"><i class="fas fa-copy"></i> Copy Output</button>
 
     <div class="footer">
-        Made with ❤️ — By MR X (AI) | ENJOY  <a href="https://new-try-theta.vercel.app/?link=https%3A%2F%2Fnew-try-theta.vercel.app%2Fplaylist.m3u" target="_blank">LIVE TV 📺</a>
+        Made with ❤️ — By MR X (AI) | Enjoy  <a href="https://new-try-theta.vercel.app/?link=https%3A%2F%2Fnew-try-theta.vercel.app%2Fplaylist.m3u" target="_blank">LIVE TV 📺</a>
     </div>
   </div>
 
   <div id="welcomeModal" class="modal">
     <div class="modal-content">
-      <span class="modal-close-btn" onclick="closeWelcomeModal()">&times;</span>
+      <span class="modal-close-btn" id="welcomeModalCloseBtn">&times;</span>
       <h4>Welcome to the EXTM3U Playlist Creator!</h4>
-      <p style="text-align: center; color: #f0f0f0;">Easily create and manage your M3U playlists with these features:</p>
+      <p style="text-align: center; color: var(--text-light);">Easily create and manage your M3U playlists with these features:</p>
       <ul>
         <li><i class="fas fa-stream"></i> Add **individual channels** with names, URLs, and custom logos.</li>
         <li><i class="fas fa-folder"></i> **Automate from Pixeldrain Folder Links:** Simply paste a Pixeldrain folder link (e.g., `https://pixeldrain.com/l/FOLDER_ID`), and all files within that folder will be added as individual channels with their API links!</li>
         <li><i class="fas fa-film"></i> **Smart Logo Fetching:** If you add a channel containing "movie" in its name and no custom logo, we'll try to fetch a relevant movie poster from TMDB!</li>
-        <li><i class="fas fa-sliders-h"></i> Set **global default logo and group names** for all channels.</li>
+        <li><i class="fas fa-sliders-h"></i> Set **global default logo and group names** for all channels. These will be saved automatically!</li>
         <li><i class="fas fa-search"></i> **Search and manage** your added channels with ease.</li>
+        <li><i class="fas fa-signal"></i> **Live Stream Checker:** Quickly check if your added stream URLs are active.</li>
         <li><i class="fas fa-save"></i> **Save and load multiple playlists** locally in your browser.</li>
         <li><i class="fas fa-download"></i> **Generate and download** your M3U playlist file instantly.</li>
+        <li><i class="fas fa-qrcode"></i> **Generate QR Code:** Get a QR code for your playlist URL for easy access on other devices.</li>
         <li><i class="fas fa-copy"></i> **Copy** the generated M3U output to your clipboard.</li>
       </ul>
       <p class="modal-footer-text">Get started by adding your first channel or Pixeldrain folder link!</p>
     </div>
   </div>
 
+  <div id="confirmationModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close-btn" id="confirmationModalCloseBtn">&times;</span>
+      <p id="confirmationMessage"></p>
+      <div class="button-group-row">
+        <button class="btn btn-secondary" id="cancelConfirmBtn">No</button>
+        <button class="btn btn-danger" id="confirmActionBtn">Yes</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="alertModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close-btn" id="alertModalCloseBtn">&times;</span>
+      <p id="alertMessage"></p>
+      <div class="button-group-row">
+        <button class="btn btn-primary" id="alertOkBtn">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="qrCodeModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close-btn" id="qrCodeModalCloseBtn">&times;</span>
+      <h4>Scan QR Code for Playlist</h4>
+      <canvas id="qrCodeCanvas"></canvas>
+      <p id="qrCodeMessage">Scan this QR code with your device to access the playlist.</p>
+    </div>
+  </div>
+
   <script>
     let currentChannels = [];
     let savedPlaylists = {};
-    let isProcessingFolder = false; // To prevent multiple simultaneous folder processing
+    let isProcessingFolder = false;
 
-    const CURRENT_PLAYLIST_KEY = 'currentM3UChannels';
-    const SAVED_PLAYLISTS_KEY = 'savedM3UPlaylists';
-    const AUTO_SAVE_PLAYLIST_NAME = "Auto Saved Session"; // ডিফল্ট অটো-সেভ প্লেলিস্টের নাম
-    const WELCOME_MODAL_SHOWN_KEY = 'welcomeModalShown'; // For popup
+    // Local Storage Keys
+    const LOCAL_STORAGE_KEYS = {
+        CURRENT_PLAYLIST: 'currentM3UChannels',
+        SAVED_PLAYLISTS: 'savedM3UPlaylists',
+        GLOBAL_SETTINGS: 'globalM3USettings',
+        WELCOME_MODAL_SHOWN: 'welcomeModalShown'
+    };
 
-    // TMDB API Key (এখানে আপনার TMDB API কী বসান)
+    const AUTO_SAVE_PLAYLIST_NAME = "Auto Saved Session";
+
+    // TMDB API Key (Replace with your actual TMDB API Key)
     const TMDB_API_KEY = 'YOUR_TMDB_API_KEY'; // <--- এখানে আপনার TMDB API Key যোগ করুন!
-    const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w200'; // ছোট লোগোর জন্য w200, বড় চাইলে w500 বা original
+    const TMDB_IMAGE_BASE_URL = 'https://image.themoviedb.org/t/p/w200';
 
-    // List of common video file extensions
+    // List of common video file extensions for Pixeldrain folder processing
     const videoFileExtensions = [
         '.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mpeg', '.mpg', '.3gp',
         '.ts', '.m2ts', '.ogg', '.ogv', '.f4v', '.swf', '.vob', '.qt', '.rm', '.rmvb',
-        '.divx', '.xvid', '.m4v', '.asf', '.dat', '.evo', '.hevc', '.h264', '.h265'
+        '.divx', '.xvid', '.m4v', '.asf', '.dat', '.evo', '.hevc', '.h264', '.h265', '.m3u8'
     ];
 
-    // Helper function to convert Pixeldrain file URL (u/ to api/file/)
+    // DOM Elements
+    const elements = {
+        logoAll: document.getElementById("logoAll"),
+        globalGroup: document.getElementById("globalGroup"),
+        channelName: document.getElementById("channelName"),
+        channelURL: document.getElementById("channelURL"),
+        channelLogo: document.getElementById("channelLogo"),
+        addChannelBtn: document.getElementById("addChannelBtn"),
+        checkStreamsBtn: document.getElementById("checkStreamsBtn"), // New
+        channelSearchInput: document.getElementById("channelSearchInput"),
+        previewList: document.getElementById("previewList"),
+        savedPlaylistsToggleBtn: document.getElementById("savedPlaylistsToggleBtn"),
+        savedPlaylistsDropdown: document.getElementById("savedPlaylistsDropdown"),
+        savedPlaylistsCount: document.getElementById("savedPlaylistsCount"),
+        playlistFileNameInput: document.getElementById("playlistFileNameInput"),
+        savePlaylistBtn: document.getElementById("savePlaylistBtn"),
+        generateM3UBtn: document.getElementById("generateM3UBtn"),
+        downloadM3UBtn: document.getElementById("downloadM3UBtn"),
+        generateQrCodeBtn: document.getElementById("generateQrCodeBtn"), // New
+        clearCurrentBtn: document.getElementById("clearCurrentBtn"),
+        output: document.getElementById("output"),
+        copyOutputBtn: document.getElementById("copyOutputBtn"),
+        welcomeModal: document.getElementById("welcomeModal"),
+        welcomeModalCloseBtn: document.getElementById("welcomeModalCloseBtn"),
+        confirmationModal: document.getElementById("confirmationModal"),
+        confirmationMessage: document.getElementById("confirmationMessage"),
+        confirmActionBtn: document.getElementById("confirmActionBtn"),
+        cancelConfirmBtn: document.getElementById("cancelConfirmBtn"),
+        alertModal: document.getElementById("alertModal"), // New
+        alertMessage: document.getElementById("alertMessage"), // New
+        alertOkBtn: document.getElementById("alertOkBtn"), // New
+        alertModalCloseBtn: document.getElementById("alertModalCloseBtn"), // New
+        qrCodeModal: document.getElementById("qrCodeModal"), // New
+        qrCodeModalCloseBtn: document.getElementById("qrCodeModalCloseBtn"), // New
+        qrCodeCanvas: document.getElementById("qrCodeCanvas"), // New
+    };
+
+    let resolveConfirmation = null; // Used for promise-based confirmation
+    let resolveAlert = null; // Used for promise-based alert
+
+    // --- Helper Functions ---
+    function showModal(modalElement) {
+        if (modalElement) {
+            modalElement.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent scrolling body when modal is open
+        }
+    }
+
+    function closeModal(modalElement) {
+        if (modalElement) {
+            modalElement.style.display = 'none';
+            document.body.style.overflow = ''; // Restore body scrolling
+        }
+    }
+
+    /**
+     * Shows a custom alert modal.
+     * @param {string} message - The message to display.
+     * @returns {Promise<void>} A promise that resolves when the user clicks OK.
+     */
+    function showCustomAlert(message) {
+        return new Promise(resolve => {
+            if (elements.alertMessage) {
+                elements.alertMessage.textContent = message;
+            }
+            resolveAlert = resolve; // Store resolve function
+            showModal(elements.alertModal);
+        });
+    }
+
+    /**
+     * Shows a custom confirmation modal.
+     * @param {string} message - The message to display.
+     * @returns {Promise<boolean>} A promise that resolves to true if 'Yes' is clicked, false if 'No'.
+     */
+    function showCustomConfirm(message) {
+        return new Promise(resolve => {
+            if (elements.confirmationMessage) {
+                elements.confirmationMessage.textContent = message;
+            }
+            resolveConfirmation = resolve; // Store resolve function
+            showModal(elements.confirmationModal);
+        });
+    }
+
     function convertPixeldrainFileUrl(originalUrl) {
         const pixeldrainFileRegex = /^https:\/\/pixeldrain\.com\/u\/([a-zA-Z0-9]+)$/;
         const match = originalUrl.match(pixeldrainFileRegex);
         if (match && match[1]) {
             return `https://pixeldrain.com/api/file/${match[1]}`;
         }
-        return originalUrl; // Return original if no match
+        return originalUrl;
     }
 
-    // New function to process Pixeldrain folder links
     async function processPixeldrainFolder(folderUrl) {
         if (isProcessingFolder) {
-            alert("Already processing a folder. Please wait.");
+            await showCustomAlert("Already processing a folder. Please wait.");
             return [];
         }
 
@@ -638,7 +878,7 @@
         const match = folderUrl.match(folderIdRegex);
         if (!match || !match[1]) {
             console.error("Invalid Pixeldrain folder URL format.");
-            alert("Invalid Pixeldrain folder URL. Please use a link like: https://pixeldrain.com/l/FOLDER_ID");
+            await showCustomAlert("Invalid Pixeldrain folder URL. Please use a link like: https://pixeldrain.com/l/FOLDER_ID");
             return [];
         }
 
@@ -648,11 +888,13 @@
 
         try {
             isProcessingFolder = true;
-            document.getElementById("channelURL").value = "Loading folder content...";
-            document.getElementById("channelURL").disabled = true;
-            document.getElementById("channelName").disabled = true;
-            document.getElementById("channelLogo").disabled = true;
-            document.querySelector(".btn-success").disabled = true; // Add Channel button
+            // Show loading state
+            if (elements.channelURL) elements.channelURL.value = "Loading folder content...";
+            if (elements.channelURL) elements.channelURL.disabled = true;
+            if (elements.channelName) elements.channelName.disabled = true;
+            if (elements.channelLogo) elements.channelLogo.disabled = true;
+            if (elements.addChannelBtn) elements.addChannelBtn.disabled = true;
+            if (elements.checkStreamsBtn) elements.checkStreamsBtn.disabled = true; // Disable during folder processing
 
             const response = await fetch(apiUrl);
             if (!response.ok) {
@@ -664,147 +906,49 @@
             const data = await response.json();
 
             if (data && data.files && data.files.length > 0) {
-                let channelCount = currentChannels.length + 1; // Start numbering from existing channels + 1
+                let channelCount = currentChannels.length + 1;
 
                 for (const file of data.files) {
-                    // Check if the file has a video extension
                     const fileExtension = file.name ? '.' + file.name.split('.').pop().toLowerCase() : '';
                     if (file.id && videoFileExtensions.includes(fileExtension)) {
-                        const fileName = file.name || `Channel ${channelCount}`; // Use filename, or fallback to sequential number
+                        const fileName = file.name || `Channel ${channelCount}`;
                         const fileApiUrl = `https://pixeldrain.com/api/file/${file.id}`;
-                        // Pixeldrain থাম্বনেইল URL তৈরি করুন
-                        const fileThumbnailUrl = `https://pixeldrain.com/api/file/${file.id}/thumbnail`; 
-                        
-                        const logo = fileThumbnailUrl; // থাম্বনেইলকে লোগো হিসেবে ব্যবহার করুন
-                        const group = document.getElementById("globalGroup").value.trim();
+                        const fileThumbnailUrl = `https://pixeldrain.com/api/file/${file.id}/thumbnail`;
 
                         addedChannelsFromFolder.push({
                             name: fileName,
                             url: fileApiUrl,
-                            logo: logo,
-                            group: group
+                            logo: fileThumbnailUrl,
+                            group: elements.globalGroup.value.trim()
                         });
                         channelCount++;
                     }
                 }
                 if (addedChannelsFromFolder.length === 0) {
-                    alert("No video files found in the Pixeldrain folder.");
+                    await showCustomAlert("No video files found in the Pixeldrain folder.");
                 }
             } else {
-                alert("No files found in the Pixeldrain folder.");
+                await showCustomAlert("No files found in the Pixeldrain folder.");
             }
         } catch (error) {
             console.error("Error processing Pixeldrain folder:", error);
-            alert(`Error processing Pixeldrain folder: ${error.message}. Please check the URL and try again.`);
+            await showCustomAlert(`Error processing Pixeldrain folder: ${error.message}. Please check the URL and try again.`);
         } finally {
             isProcessingFolder = false;
-            document.getElementById("channelURL").value = "";
-            document.getElementById("channelURL").disabled = false;
-            document.getElementById("channelName").disabled = false;
-            document.getElementById("channelLogo").disabled = false;
-            document.querySelector(".btn-success").disabled = false; // Add Channel button
+            if (elements.channelURL) elements.channelURL.value = "";
+            if (elements.channelURL) elements.channelURL.disabled = false;
+            if (elements.channelName) elements.channelName.disabled = false;
+            if (elements.channelLogo) elements.channelLogo.disabled = false;
+            if (elements.addChannelBtn) elements.addChannelBtn.disabled = false;
+            if (elements.checkStreamsBtn) elements.checkStreamsBtn.disabled = false;
         }
         return addedChannelsFromFolder;
-    }
-
-
-    // --- Local Storage Functions ---
-    function saveCurrentChannels() {
-      localStorage.setItem(CURRENT_PLAYLIST_KEY, JSON.stringify(currentChannels));
-      // যখনই currentChannels আপডেট হবে, তখনই এটি auto-save playlist এও সেভ হবে।
-      if (currentChannels.length > 0) { // শুধু যদি কোন চ্যানেল থাকে তাহলেই সেভ হবে
-        savedPlaylists[AUTO_SAVE_PLAYLIST_NAME] = [...currentChannels];
-        savePlaylistsToLocalStorage();
-      } else { // যদি currentChannels খালি হয়ে যায়, auto-save playlist থেকে এটি মুছে ফেলা হবে
-        if (savedPlaylists[AUTO_SAVE_PLAYLIST_NAME]) { 
-          delete savedPlaylists[AUTO_SAVE_PLAYLIST_NAME];
-          savePlaylistsToLocalStorage();
-        }
-      }
-      renderSavedPlaylistsDropdown(); // সেভড প্লেলিস্ট ড্রপডাউন আপডেট করা
-    }
-
-    function loadCurrentChannels() {
-      const storedChannels = localStorage.getItem(CURRENT_PLAYLIST_KEY);
-      if (storedChannels) {
-        currentChannels = JSON.parse(storedChannels);
-        // নিশ্চিত করুন যে প্রতিটি চ্যানেলের জন্য একটি বৈধ লোগো আছে
-        currentChannels.forEach(channel => {
-            if (!channel.logo || channel.logo === "https://via.placeholder.com/30?text=Loading...") {
-                channel.logo = document.getElementById("logoAll").value.trim() || "https://via.placeholder.com/30";
-            }
-        });
-        renderCurrentChannels();
-      } else {
-        renderCurrentChannels(); // Show "No channels added yet" message on initial load
-      }
-    }
-
-    function savePlaylistsToLocalStorage() {
-        localStorage.setItem(SAVED_PLAYLISTS_KEY, JSON.stringify(savedPlaylists));
-    }
-
-    function loadPlaylistsFromLocalStorage() {
-        const storedPlaylists = localStorage.getItem(SAVED_PLAYLISTS_KEY);
-        if (storedPlaylists) {
-            savedPlaylists = JSON.parse(storedPlaylists);
-        }
-        renderSavedPlaylistsDropdown();
-    }
-
-    // --- Channel Management Functions (Current Playlist) ---
-    function renderCurrentChannels() {
-      const previewList = document.getElementById("previewList");
-      previewList.innerHTML = "";
-      // ফিল্টারিং এর জন্য একটি নতুন অ্যারে তৈরি করি
-      const searchTerm = document.getElementById("channelSearchInput").value.toLowerCase();
-      const filteredChannels = currentChannels.filter(ch => 
-          ch.name.toLowerCase().includes(searchTerm) || 
-          ch.url.toLowerCase().includes(searchTerm) ||
-          (ch.group && ch.group.toLowerCase().includes(searchTerm))
-      );
-
-
-      if (filteredChannels.length === 0) {
-        // এইখানে width: 100% যোগ করা হয়েছে যাতে টেক্সট মাঝখানে আসে
-        previewList.innerHTML = `<p style="text-align: center; color: #777; padding: 20px; width: 100%;">No channels added yet.</p>`;
-        if (currentChannels.length > 0 && searchTerm !== '') {
-            previewList.innerHTML = `<p style="text-align: center; color: #777; padding: 20px; width: 100%;">No matching channels found.</p>`;
-        }
-      } else {
-        filteredChannels.forEach((ch, index) => {
-          // original index খুঁজে বের করি, কারণ filterChannels() নতুন অ্যারে তৈরি করে
-          const originalIndex = currentChannels.indexOf(ch); 
-          const previewDiv = document.createElement("div");
-          previewDiv.className = "channel-preview";
-          previewDiv.innerHTML = `
-            <img src="${ch.logo}" alt="Logo">
-            <span>${ch.name} ${ch.group ? `(${ch.group})` : ''}</span>
-            <div class="action-buttons">
-                <button class="edit-btn" onclick="editChannel(${originalIndex})">
-                    <i class="fas fa-edit"></i> 
-                </button>
-                <button class="delete-btn" onclick="confirmRemoveChannel(${originalIndex})">
-                    <i class="fas fa-times"></i> 
-                </button>
-            </div>
-          `;
-          previewList.appendChild(previewDiv);
-        });
-      }
-      generateM3U(); // Always regenerate output after rendering
-    }
-
-    function confirmRemoveChannel(index) {
-        if (confirm("Are you sure you want to delete this channel?")) {
-            removeChannel(index);
-        }
     }
 
     async function searchMovieLogo(movieName) {
         if (!movieName || TMDB_API_KEY === 'YOUR_TMDB_API_KEY' || !TMDB_API_KEY) {
             console.warn("TMDB API Key is not set or movie name is empty. Using placeholder logo.");
-            return "https://via.placeholder.com/30"; 
+            return "https://via.placeholder.com/30";
         }
 
         try {
@@ -812,7 +956,7 @@
             const data = await response.json();
 
             if (data.results && data.results.length > 0) {
-                const movie = data.results[0]; // Get the first result
+                const movie = data.results[0];
                 if (movie.poster_path) {
                     return TMDB_IMAGE_BASE_URL + movie.poster_path;
                 } else if (movie.backdrop_path) {
@@ -822,329 +966,604 @@
         } catch (error) {
             console.error("Error fetching movie logo from TMDB:", error);
         }
-        return "https://via.placeholder.com/30"; // Fallback logo
+        return "https://via.placeholder.com/30";
     }
 
-    async function addChannel() {
-      const nameInput = document.getElementById("channelName");
-      const urlInput = document.getElementById("channelURL");
-      const logoInput = document.getElementById("channelLogo");
-
-      let name = nameInput.value.trim();
-      let url = urlInput.value.trim();
-      let customLogo = logoInput.value.trim();
-      const globalLogo = document.getElementById("logoAll").value.trim();
-      const globalGroup = document.getElementById("globalGroup").value.trim();
-
-      if (!url) {
-        alert("Stream URL (or Pixeldrain Folder Link) is required!");
-        return;
-      }
-
-      const pixeldrainFolderRegex = /^https:\/\/pixeldrain\.com\/l\/([a-zA-Z0-9]+)$/;
-
-      if (pixeldrainFolderRegex.test(url)) {
-          // It's a Pixeldrain folder link
-          if (name) {
-              alert("When adding a Pixeldrain folder, channel name input will be ignored. Names will be taken from file names or numbered.");
-              nameInput.value = ""; // Clear name input
-          }
-          if (customLogo) {
-              alert("When adding a Pixeldrain folder, custom logo input will be ignored. Thumbnails will be used as logos.");
-              logoInput.value = ""; // Clear logo input
-          }
-
-          const channelsFromFolder = await processPixeldrainFolder(url);
-          if (channelsFromFolder.length > 0) {
-              currentChannels.push(...channelsFromFolder); // Add all channels from folder
-              saveCurrentChannels();
-              renderCurrentChannels();
-              alert(`Added ${channelsFromFolder.length} video channels from Pixeldrain folder!`);
-          }
-          urlInput.value = ""; // Clear URL input after processing folder
-          return; // Exit as folder processing handles adding channels
-      }
-
-      // If not a folder link, proceed with single channel addition
-      if (!name) {
-        alert("Channel name is required for single channel entries!");
-        return;
-      }
-
-      // Convert Pixeldrain file URL if applicable
-      url = convertPixeldrainFileUrl(url);
-
-      let finalLogo = customLogo;
-      // যদি কাস্টম লোগো না থাকে এবং চ্যানেলের নাম 'movie' অন্তর্ভুক্ত করে, তবে TMDB থেকে লোগো সার্চ করুন
-      if (!customLogo && name.toLowerCase().includes("movie")) {
-          // Add channel with a temporary loading logo first
-          const tempLogo = "https://via.placeholder.com/30?text=Loading...";
-          const channelIndex = currentChannels.length; // Get the index before pushing
-          currentChannels.push({ name, url, logo: tempLogo, group: globalGroup });
-          saveCurrentChannels();
-          renderCurrentChannels(); // Render immediately with loading state
-
-          // Fetch logo asynchronously
-          const fetchedLogo = await searchMovieLogo(name);
-          
-          // Update the specific channel with the fetched logo
-          currentChannels[channelIndex].logo = fetchedLogo;
-          logoInput.value = fetchedLogo; // Update input for next use
-          
-          // Re-render after a short delay to ensure UI updates
-          setTimeout(() => {
-            saveCurrentChannels();
-            renderCurrentChannels();
-          }, 100); 
-
-      } else {
-          finalLogo = customLogo || globalLogo || "https://via.placeholder.com/30";
-          currentChannels.push({ name, url, logo: finalLogo, group: globalGroup });
-          saveCurrentChannels();
-          renderCurrentChannels();
-      }
-      
-      // Clear inputs (except customLogo if it was just fetched by TMDB)
-      nameInput.value = "";
-      urlInput.value = "";
-      if (!name.toLowerCase().includes("movie") || customLogo) { // Only clear if not TMDB fetched
-        logoInput.value = ""; 
-      }
+    // --- Local Storage Functions ---
+    function saveCurrentChannels() {
+        localStorage.setItem(LOCAL_STORAGE_KEYS.CURRENT_PLAYLIST, JSON.stringify(currentChannels));
+        if (currentChannels.length > 0) {
+            savedPlaylists[AUTO_SAVE_PLAYLIST_NAME] = [...currentChannels];
+            savePlaylistsToLocalStorage();
+        } else {
+            if (savedPlaylists[AUTO_SAVE_PLAYLIST_NAME]) {
+                delete savedPlaylists[AUTO_SAVE_PLAYLIST_NAME];
+                savePlaylistsToLocalStorage();
+            }
+        }
+        renderSavedPlaylistsDropdown();
     }
+
+    function loadCurrentChannels() {
+        const storedChannels = localStorage.getItem(LOCAL_STORAGE_KEYS.CURRENT_PLAYLIST);
+        if (storedChannels) {
+            currentChannels = JSON.parse(storedChannels);
+            currentChannels.forEach(channel => {
+                if (!channel.logo || channel.logo.includes("placeholder.com") || channel.logo.includes("Loading...")) {
+                    channel.logo = elements.logoAll.value.trim() || "https://via.placeholder.com/30";
+                }
+            });
+        }
+        renderCurrentChannels();
+    }
+
+    function savePlaylistsToLocalStorage() {
+        localStorage.setItem(LOCAL_STORAGE_KEYS.SAVED_PLAYLISTS, JSON.stringify(savedPlaylists));
+    }
+
+    function loadPlaylistsFromLocalStorage() {
+        const storedPlaylists = localStorage.getItem(LOCAL_STORAGE_KEYS.SAVED_PLAYLISTS);
+        if (storedPlaylists) {
+            savedPlaylists = JSON.parse(storedPlayasts);
+        }
+        renderSavedPlaylistsDropdown();
+    }
+
+    function saveGlobalSettings() {
+        const settings = {
+            globalLogo: elements.logoAll.value.trim(),
+            globalGroup: elements.globalGroup.value.trim(),
+        };
+        localStorage.setItem(LOCAL_STORAGE_KEYS.GLOBAL_SETTINGS, JSON.stringify(settings));
+    }
+
+    function loadGlobalSettings() {
+        const storedSettings = localStorage.getItem(LOCAL_STORAGE_KEYS.GLOBAL_SETTINGS);
+        if (storedSettings) {
+            const settings = JSON.parse(storedSettings);
+            elements.logoAll.value = settings.globalLogo || '';
+            elements.globalGroup.value = settings.globalGroup || '';
+        }
+    }
+
+    // --- Channel Management Functions (Current Playlist) ---
+    function renderCurrentChannels() {
+        if (!elements.previewList) return; // Add null check for robustness
+        elements.previewList.innerHTML = "";
+        const searchTerm = elements.channelSearchInput.value.toLowerCase();
+        const filteredChannels = currentChannels.filter(ch =>
+            ch.name.toLowerCase().includes(searchTerm) ||
+            ch.url.toLowerCase().includes(searchTerm) ||
+            (ch.group && ch.group.toLowerCase().includes(searchTerm))
+        );
+
+        if (filteredChannels.length === 0) {
+            let message = "No channels added yet.";
+            if (currentChannels.length > 0 && searchTerm !== '') {
+                message = "No matching channels found.";
+            }
+            elements.previewList.innerHTML = `<p style="text-align: center; color: var(--text-placeholder); padding: 20px; width: 100%;">${message}</p>`;
+        } else {
+            filteredChannels.forEach((ch, index) => {
+                const originalIndex = currentChannels.indexOf(ch); // Find the original index for operations
+                const previewDiv = document.createElement("div");
+                previewDiv.className = "channel-preview";
+                previewDiv.innerHTML = `
+                    <img src="${ch.logo}" alt="Logo" onerror="this.onerror=null;this.src='https://via.placeholder.com/30';" loading="lazy">
+                    <span>${ch.name} ${ch.group ? `(${ch.group})` : ''}</span>
+                    <div class="status-icon" id="status-${originalIndex}"></div> <div class="action-buttons">
+                        <button class="edit-btn" data-index="${originalIndex}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="delete-btn" data-index="${originalIndex}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                elements.previewList.appendChild(previewDiv);
+            });
+            elements.previewList.querySelectorAll('.edit-btn').forEach(button => {
+                button.addEventListener('click', (e) => editChannel(parseInt(e.currentTarget.dataset.index)));
+            });
+            elements.previewList.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const confirmed = await showCustomConfirm("Are you sure you want to delete this channel?");
+                    if (confirmed) {
+                        removeChannel(parseInt(e.currentTarget.dataset.index));
+                    }
+                });
+            });
+        }
+        generateM3U();
+    }
+
+    async function addChannelFromInputs() {
+        const name = elements.channelName.value.trim();
+        let url = elements.channelURL.value.trim();
+        const customLogo = elements.channelLogo.value.trim();
+
+        if (!url) {
+            await showCustomAlert("Stream URL (or Pixeldrain Folder Link) is required!");
+            return;
+        }
+
+        const pixeldrainFolderRegex = /^https:\/\/pixeldrain\.com\/l\/([a-zA-Z0-9]+)$/;
+
+        if (pixeldrainFolderRegex.test(url)) {
+            if (name) await showCustomAlert("When adding a Pixeldrain folder, channel name input will be ignored. Names will be taken from file names or numbered.");
+            if (customLogo) await showCustomAlert("When adding a Pixeldrain folder, custom logo input will be ignored. Thumbnails will be used as logos.");
+
+            const channelsFromFolder = await processPixeldrainFolder(url);
+            if (channelsFromFolder.length > 0) {
+                currentChannels.push(...channelsFromFolder);
+                saveCurrentChannels();
+                renderCurrentChannels();
+                await showCustomAlert(`Added ${channelsFromFolder.length} video channels from Pixeldrain folder!`);
+            }
+        } else {
+            if (!name) {
+                await showCustomAlert("Channel name is required for single channel entries!");
+                return;
+            }
+            url = convertPixeldrainFileUrl(url);
+
+            let finalLogo = customLogo;
+            if (!customLogo && name.toLowerCase().includes("movie") && TMDB_API_KEY !== 'YOUR_TMDB_API_KEY' && TMDB_API_KEY) {
+                const tempLogo = "https://via.placeholder.com/30?text=Loading...";
+                const channelIndex = currentChannels.length;
+                currentChannels.push({ name, url, logo: tempLogo, group: elements.globalGroup.value.trim() });
+                saveCurrentChannels();
+                renderCurrentChannels();
+
+                const fetchedLogo = await searchMovieLogo(name);
+                currentChannels[channelIndex].logo = fetchedLogo;
+                setTimeout(() => {
+                    saveCurrentChannels();
+                    renderCurrentChannels();
+                }, 100);
+
+            } else {
+                finalLogo = customLogo || elements.logoAll.value.trim() || "https://via.placeholder.com/30";
+                currentChannels.push({ name, url, logo: finalLogo, group: elements.globalGroup.value.trim() });
+                saveCurrentChannels();
+                renderCurrentChannels();
+            }
+        }
+
+        elements.channelName.value = "";
+        elements.channelURL.value = "";
+        elements.channelLogo.value = "";
+    }
+
 
     function removeChannel(index) {
-      currentChannels.splice(index, 1);
-      saveCurrentChannels(); // এখানে অটো-সেভ ট্রিগার হবে
-      renderCurrentChannels();
+        currentChannels.splice(index, 1);
+        saveCurrentChannels();
+        renderCurrentChannels();
     }
 
-    function editChannel(index) {
+    async function editChannel(index) {
         const channel = currentChannels[index];
         if (!channel) return;
 
-        // Prompt user for new values
-        const newName = prompt("Edit Channel Name:", channel.name);
-        if (newName === null) return; // User cancelled
+        let newName = prompt("Edit Channel Name:", channel.name);
+        if (newName === null) return;
+        newName = newName.trim();
 
         let newUrl = prompt("Edit Stream URL:", channel.url);
-        if (newUrl === null) return; // User cancelled
+        if (newUrl === null) return;
+        newUrl = convertPixeldrainFileUrl(newUrl.trim());
 
-        // Convert Pixeldrain file URL on edit (folder links are not editable this way)
-        newUrl = convertPixeldrainFileUrl(newUrl);
+        let newLogo = prompt("Edit Logo URL (leave empty for global/TMDB if applicable):", channel.logo);
+        if (newLogo === null) return;
+        newLogo = newLogo.trim();
 
-        const newLogo = prompt("Edit Logo URL (leave empty for global/TMDB if applicable):", channel.logo);
-        if (newLogo === null) return; // User cancelled
+        let newGroup = prompt("Edit Group Name:", channel.group || '');
+        if (newGroup === null) return;
+        newGroup = newGroup.trim();
 
-        const newGroup = prompt("Edit Group Name:", channel.group || '');
-        if (newGroup === null) return; // User cancelled
-
-
-        // Update the channel object
-        channel.name = newName.trim();
-        channel.url = newUrl.trim();
-        // নিশ্চিত করুন যে এডিট করার সময় লোগো URL খালি না থাকে
-        channel.logo = newLogo.trim() || document.getElementById("logoAll").value.trim() || "https://via.placeholder.com/30";
-        channel.group = newGroup.trim();
+        channel.name = newName;
+        channel.url = newUrl;
+        channel.logo = newLogo || elements.logoAll.value.trim() || "https://via.placeholder.com/30";
+        channel.group = newGroup;
 
         saveCurrentChannels();
         renderCurrentChannels();
-        alert("Channel updated successfully!");
+        await showCustomAlert("Channel updated successfully!");
     }
 
     function filterChannels() {
-        renderCurrentChannels(); // Re-renders the list based on the search input value
+        renderCurrentChannels();
     }
 
-    function clearCurrentChannels() {
-      if (confirm("Are you sure you want to clear all channels from the current playlist?")) {
-        currentChannels = [];
-        saveCurrentChannels(); // এখানে অটো-সেভ ট্রিগার হবে (প্লেলিস্ট খালি হবে)
-        renderCurrentChannels();
-      }
+    async function clearCurrentChannels() {
+        const confirmed = await showCustomConfirm("Are you sure you want to clear all channels from the current playlist?");
+        if (confirmed) {
+            currentChannels = [];
+            saveCurrentChannels();
+            renderCurrentChannels();
+        }
     }
 
     // --- M3U Generation & Download ---
     function generateM3U() {
-      let output = "#EXTM3U\n";
-      currentChannels.forEach(ch => {
-        output += `#EXTINF:-1 tvg-logo="${ch.logo}"${ch.group ? ` group-title="${ch.group}"` : ''},${ch.name}\n${ch.url}\n`;
-      });
-      document.getElementById("output").value = output;
+        let output = "#EXTM3U\n";
+        currentChannels.forEach(ch => {
+            output += `#EXTINF:-1 tvg-logo="${ch.logo}"${ch.group ? ` group-title="${ch.group}"` : ''},${ch.name}\n${ch.url}\n`;
+        });
+        if (elements.output) {
+            elements.output.value = output;
+        }
     }
 
-    function downloadM3U() {
-      const content = document.getElementById("output").value;
-      if (currentChannels.length === 0) {
-          alert("Add some channels before downloading a playlist!");
-          return;
-      }
-      let fileName = document.getElementById("playlistFileNameInput").value.trim();
-      if (!fileName) {
-          fileName = "playlist"; // ডিফল্ট নাম
-      }
-      const blob = new Blob([content], { type: "audio/x-mpegurl" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `${fileName}.m3u`; // ফাইল নাম পরিবর্তন করা হয়েছে
-      a.click();
+    async function downloadM3U() {
+        const content = elements.output.value;
+        if (currentChannels.length === 0) {
+            await showCustomAlert("Add some channels before downloading a playlist!");
+            return;
+        }
+        let fileName = elements.playlistFileNameInput.value.trim();
+        if (!fileName) {
+            fileName = "playlist";
+        }
+        const blob = new Blob([content], { type: "audio/x-mpegurl" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `${fileName}.m3u`;
+        a.click();
     }
 
-    function copyOutput() {
-        const outputTextarea = document.getElementById("output");
-        outputTextarea.select();
-        outputTextarea.setSelectionRange(0, 99999); // For mobile devices
+    async function copyOutput() {
+        if (!elements.output) return;
+        elements.output.select();
+        elements.output.setSelectionRange(0, 99999);
 
         try {
-            document.execCommand("copy");
-            alert("Output copied to clipboard!");
+            await navigator.clipboard.writeText(elements.output.value);
+            await showCustomAlert("Output copied to clipboard!");
         } catch (err) {
             console.error("Failed to copy text: ", err);
-            alert("Failed to copy text. Please copy manually.");
+            await showCustomAlert("Failed to copy text. Please copy manually.");
         }
     }
 
     // --- Saved Playlists Menu Functions ---
     function toggleSavedPlaylistsDropdown() {
-        const dropdown = document.getElementById("savedPlaylistsDropdown");
-        dropdown.classList.toggle("show");
-        if (dropdown.classList.contains("show")) {
-            renderSavedPlaylistsDropdown(); // Refresh content when opened
+        if (elements.savedPlaylistsDropdown) {
+            elements.savedPlaylistsDropdown.classList.toggle("show");
+            if (elements.savedPlaylistsDropdown.classList.contains("show")) {
+                renderSavedPlaylistsDropdown();
+            }
         }
     }
 
     function renderSavedPlaylistsDropdown() {
-        const dropdownContent = document.getElementById("savedPlaylistsDropdown");
-        dropdownContent.innerHTML = "";
+        if (!elements.savedPlaylistsDropdown) return;
+        elements.savedPlaylistsDropdown.innerHTML = "";
         const playlistNames = Object.keys(savedPlaylists).sort((a, b) => {
-            // "Auto Saved Session" কে সবার উপরে রাখবে
             if (a === AUTO_SAVE_PLAYLIST_NAME) return -1;
             if (b === AUTO_SAVE_PLAYLIST_NAME) return 1;
-            return a.localeCompare(b); // বাকিগুলো বর্ণানুক্রমিক ভাবে
+            return a.localeCompare(b);
         });
-        document.getElementById('savedPlaylistsCount').textContent = `(${playlistNames.length})`;
+        if (elements.savedPlaylistsCount) {
+            elements.savedPlaylistsCount.textContent = `(${playlistNames.length})`;
+        }
 
         if (playlistNames.length === 0) {
-            dropdownContent.innerHTML = `<p style="padding: 10px 15px; color: #777; margin: 0;">No saved playlists yet.</p>`;
+            elements.savedPlaylistsDropdown.innerHTML = `<p style="padding: 10px 15px; color: var(--text-placeholder); margin: 0;">No saved playlists yet.</p>`;
         } else {
             playlistNames.forEach(name => {
                 const itemDiv = document.createElement("div");
                 itemDiv.className = "dropdown-item-actions";
                 itemDiv.innerHTML = `
-                    <span class="playlist-name-text" onclick="loadSavedPlaylist('${name}')">${name}</span>
-                    ${name !== AUTO_SAVE_PLAYLIST_NAME ? `<button class="delete-playlist-btn" onclick="confirmDeleteSavedPlaylist('${name}', event)">✖</button>` : ''}
+                    <span class="playlist-name-text" data-playlist-name="${name}">${name}</span>
+                    ${name !== AUTO_SAVE_PLAYLIST_NAME ? `<button class="delete-playlist-btn" data-playlist-name="${name}">✖</button>` : ''}
                 `;
-                dropdownContent.appendChild(itemDiv);
+                elements.savedPlaylistsDropdown.appendChild(itemDiv);
+            });
+            elements.savedPlaylistsDropdown.querySelectorAll('.playlist-name-text').forEach(span => {
+                span.addEventListener('click', (e) => loadSavedPlaylist(e.currentTarget.dataset.playlistName));
+            });
+            elements.savedPlaylistsDropdown.querySelectorAll('.delete-playlist-btn').forEach(button => {
+                button.addEventListener('click', (e) => confirmDeleteSavedPlaylist(e.currentTarget.dataset.playlistName, e));
             });
         }
     }
 
-    function saveCurrentPlaylist() {
-        const playlistNameInput = document.getElementById("playlistFileNameInput"); // ফাইল নামের ইনপুট ব্যবহার করা হয়েছে
-        let playlistName = playlistNameInput.value.trim();
+    async function saveCurrentPlaylist() {
+        let playlistName = elements.playlistFileNameInput.value.trim();
 
         if (currentChannels.length === 0) {
-            alert("No channels to save. Add channels to the current playlist first.");
+            await showCustomAlert("No channels to save. Add channels to the current playlist first.");
             return;
         }
 
-        if (!playlistName || playlistName === AUTO_SAVE_PLAYLIST_NAME) { // অটো সেভ নামের সাথে কনফ্লিক্ট এড়ানো
+        if (!playlistName || playlistName === AUTO_SAVE_PLAYLIST_NAME) {
             playlistName = prompt("Please enter a name for this playlist:", `My Playlist ${Object.keys(savedPlaylists).length + 1}`);
-            if (!playlistName) return; // User cancelled
+            if (!playlistName) return;
             playlistName = playlistName.trim();
             if (!playlistName || playlistName === AUTO_SAVE_PLAYLIST_NAME) {
-                alert("Invalid playlist name. Cannot be empty or 'Auto Saved Session'.");
+                await showCustomAlert("Invalid playlist name. Cannot be empty or 'Auto Saved Session'.");
                 return;
             }
         }
 
         if (savedPlaylists?.[playlistName]) {
-            if (!confirm(`A playlist named "${playlistName}" already exists. Do you want to overwrite it?`)) {
-                return;
+            const confirmed = await showCustomConfirm(`A playlist named "${playlistName}" already exists. Do you want to overwrite it?`);
+            if (confirmed) {
+                savedPlaylists = { ...savedPlaylists, [playlistName]: [...currentChannels] };
+                savePlaylistsToLocalStorage();
+                renderSavedPlaylistsDropdown();
+                await showCustomAlert(`Playlist "${playlistName}" overwritten successfully!`);
             }
+        } else {
+            savedPlaylists = { ...savedPlaylists, [playlistName]: [...currentChannels] };
+            savePlaylistsToLocalStorage();
+            renderSavedPlaylistsDropdown();
+            await showCustomAlert(`Playlist "${playlistName}" saved successfully!`);
         }
-
-        savedPlaylists = {...savedPlaylists, [playlistName]: [...currentChannels]}; // Save a copy of currentChannels
-        savePlaylistsToLocalStorage();
-        renderSavedPlaylistsDropdown();
-        alert(`Playlist "${playlistName}" saved successfully!`);
-        // playlistNameInput.value = ""; // সেভ করার পর ইনপুট খালি না করে নামটি রেখে দেওয়া হয়েছে
     }
 
-    function loadSavedPlaylist(name) {
-        // যদি লোড করা প্লেলিস্টটি Auto Saved Session হয়, তাহলে নিশ্চিতকরণ বার্তা বাদ দেওয়া যেতে পারে
-        if (name === AUTO_SAVE_PLAYLIST_NAME || confirm(`Loading "${name}" will replace your current playlist. Continue?`)) {
-            currentChannels = [...savedPlaylists?.[name] || []]; // Load a copy
-            // নিশ্চিত করুন যে লোড করার সময় প্রতিটি চ্যানেলের জন্য একটি বৈধ লোগো আছে
+    async function loadSavedPlaylist(name) {
+        if (name === AUTO_SAVE_PLAYLIST_NAME) {
+            currentChannels = [...savedPlaylists?.[name] || []];
             currentChannels.forEach(channel => {
-                if (!channel.logo || channel.logo === "https://via.placeholder.com/30?text=Loading...") {
-                    channel.logo = document.getElementById("logoAll").value.trim() || "https://via.placeholder.com/30";
+                if (!channel.logo || channel.logo.includes("placeholder.com") || channel.logo.includes("Loading...")) {
+                    channel.logo = elements.logoAll.value.trim() || "https://via.placeholder.com/30";
                 }
             });
-            saveCurrentChannels(); // Save the newly loaded playlist as current
+            saveCurrentChannels();
             renderCurrentChannels();
-            toggleSavedPlaylistsDropdown(); // Close dropdown
-            document.getElementById("playlistFileNameInput").value = name === AUTO_SAVE_PLAYLIST_NAME ? "playlist" : name; // ফাইল নামের ইনপুট আপডেট করা
-            if (name !== AUTO_SAVE_PLAYLIST_NAME) { // Auto Saved Session লোড হলে বার্তা না দেখানো
-                alert(`Playlist "${name}" loaded.`);
-            }
+            toggleSavedPlaylistsDropdown();
+            elements.playlistFileNameInput.value = "playlist";
+            return;
+        }
+
+        const confirmed = await showCustomConfirm(`Loading "${name}" will replace your current playlist. Continue?`);
+        if (confirmed) {
+            currentChannels = [...savedPlaylists?.[name] || []];
+            currentChannels.forEach(channel => {
+                if (!channel.logo || channel.logo.includes("placeholder.com") || channel.logo.includes("Loading...")) {
+                    channel.logo = elements.logoAll.value.trim() || "https://via.placeholder.com/30";
+                }
+            });
+            saveCurrentChannels();
+            renderCurrentChannels();
+            toggleSavedPlaylistsDropdown();
+            elements.playlistFileNameInput.value = name;
+            await showCustomAlert(`Playlist "${name}" loaded.`);
         }
     }
 
-    function confirmDeleteSavedPlaylist(name, event) {
-        event.stopPropagation(); // Prevent loading the playlist when deleting
+    async function confirmDeleteSavedPlaylist(name, event) {
+        event.stopPropagation();
         if (name === AUTO_SAVE_PLAYLIST_NAME) {
-          alert("The 'Auto Saved Session' playlist cannot be manually deleted.");
-          return;
+            await showCustomAlert("The 'Auto Saved Session' playlist cannot be manually deleted.");
+            return;
         }
-        if (confirm(`Are you sure you want to delete the playlist "${name}"? This action cannot be undone.`)) {
+        const confirmed = await showCustomConfirm(`Are you sure you want to delete the playlist "${name}"? This action cannot be undone.`);
+        if (confirmed) {
             deleteSavedPlaylist(name);
         }
     }
 
-    function deleteSavedPlaylist(name) {
-        const {[name]: deleted, ...rest} = savedPlaylists; // Remove the playlist
+    async function deleteSavedPlaylist(name) {
+        const {[name]: deleted, ...rest} = savedPlaylists;
         savedPlaylists = rest;
         savePlaylistsToLocalStorage();
         renderSavedPlaylistsDropdown();
-        alert(`Playlist "${name}" deleted.`);
+        await showCustomAlert(`Playlist "${name}" deleted.`);
     }
 
-    // Close the dropdown if the user clicks outside of it
-    window.onclick = function(event) {
-      if (!event.target.matches('.btn-primary') && !event.target.closest('.dropdown-content')) {
-        const dropdowns = document.getElementsByClassName("dropdown-content");
-        for (let i = 0; i < dropdowns.length; i++) {
-          const openDropdown = dropdowns [i];
-          if (openDropdown.classList.contains('show')) {
-            openDropdown.classList.remove('show');
-          }
+    // --- QR Code Generator ---
+    async function generateQrCode() {
+        if (!elements.output) {
+            await showCustomAlert("Output element not found.");
+            return;
         }
-      }
+        const playlistContent = elements.output.value;
+        if (!playlistContent.trim()) {
+            await showCustomAlert("Please generate a playlist first to create a QR code.");
+            return;
+        }
+
+        try {
+            if (elements.qrCodeCanvas) {
+                new QRious({
+                    element: elements.qrCodeCanvas,
+                    value: playlistContent,
+                    size: 250, // Size of the QR code
+                    background: 'white', // Background color of QR code
+                    foreground: 'black', // Foreground color of QR code
+                });
+                showModal(elements.qrCodeModal);
+            } else {
+                await showCustomAlert("QR Code Canvas element not found.");
+            }
+        } catch (error) {
+            console.error("Error generating QR code:", error);
+            await showCustomAlert("Failed to generate QR code. The playlist might be too large.");
+        }
     }
 
-    // --- Modal/Popup Functions ---
-    function showWelcomeModal() {
-        const modal = document.getElementById('welcomeModal');
-        modal.style.display = 'block';
+    // --- Live Stream Checker ---
+    async function checkStreams() {
+        if (currentChannels.length === 0) {
+            await showCustomAlert("No channels to check. Please add some channels first.");
+            return;
+        }
+
+        // Disable button and show loading state
+        if (elements.checkStreamsBtn) {
+            elements.checkStreamsBtn.disabled = true;
+            elements.checkStreamsBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+        }
+
+
+        for (let i = 0; i < currentChannels.length; i++) {
+            const channel = currentChannels[i];
+            const statusIconElement = document.getElementById(`status-${i}`);
+            if (statusIconElement) {
+                statusIconElement.innerHTML = '<i class="fas fa-circle-notch fa-spin loading"></i>'; // Loading spinner
+            }
+
+            try {
+                // Using a simple HEAD request with no-cors to check reachability.
+                // This is a basic check and cannot confirm if the stream is actually playable.
+                // For robust stream validation, a server-side proxy is typically required.
+                const response = await fetch(channel.url, { method: 'HEAD', mode: 'no-cors' });
+                
+                // If response.ok is not directly available due to 'no-cors',
+                // we assume reachability if no network error occurred.
+                // More advanced checks would involve inspecting response headers or using a proxy.
+                if (statusIconElement) {
+                    statusIconElement.innerHTML = '<i class="fas fa-check-circle ok"></i>'; // Assume OK if no error on fetch
+                }
+            } catch (error) {
+                console.error(`Error checking stream ${channel.name} (${channel.url}):`, error);
+                if (statusIconElement) {
+                    statusIconElement.innerHTML = '<i class="fas fa-times-circle error"></i>'; // Error
+                }
+            }
+            await new Promise(resolve => setTimeout(resolve, 200)); // Small delay to prevent overwhelming requests
+        }
+
+        if (elements.checkStreamsBtn) {
+            elements.checkStreamsBtn.disabled = false;
+            elements.checkStreamsBtn.innerHTML = '<i class="fas fa-signal"></i> Check Streams';
+        }
+        await showCustomAlert("Stream checking complete!");
     }
 
-    function closeWelcomeModal() {
-        const modal = document.getElementById('welcomeModal');
-        modal.style.display = 'none';
-        localStorage.setItem(WELCOME_MODAL_SHOWN_KEY, 'true'); // Mark that the modal has been shown
-    }
+
+    // --- Event Listeners ---
+    if (elements.addChannelBtn) elements.addChannelBtn.addEventListener('click', addChannelFromInputs);
+    if (elements.channelSearchInput) elements.channelSearchInput.addEventListener('keyup', filterChannels);
+    if (elements.savedPlaylistsToggleBtn) elements.savedPlaylistsToggleBtn.addEventListener('click', toggleSavedPlaylistsDropdown);
+    if (elements.savePlaylistBtn) elements.savePlaylistBtn.addEventListener('click', saveCurrentPlaylist);
+    if (elements.generateM3UBtn) elements.generateM3UBtn.addEventListener('click', generateM3U);
+    if (elements.downloadM3UBtn) elements.downloadM3UBtn.addEventListener('click', downloadM3U);
+    if (elements.copyOutputBtn) elements.copyOutputBtn.addEventListener('click', copyOutput);
+    if (elements.clearCurrentBtn) elements.clearCurrentBtn.addEventListener('click', clearCurrentChannels);
+    if (elements.generateQrCodeBtn) elements.generateQrCodeBtn.addEventListener('click', generateQrCode); // New
+    if (elements.checkStreamsBtn) elements.checkStreamsBtn.addEventListener('click', checkStreams); // New
+
+    // Global settings auto-save
+    if (elements.logoAll) elements.logoAll.addEventListener('input', saveGlobalSettings);
+    if (elements.globalGroup) elements.globalGroup.addEventListener('input', saveGlobalSettings);
+
+    // Modal Close Listeners
+    if (elements.welcomeModalCloseBtn) elements.welcomeModalCloseBtn.addEventListener('click', () => {
+        closeModal(elements.welcomeModal);
+        localStorage.setItem(LOCAL_STORAGE_KEYS.WELCOME_MODAL_SHOWN, 'true');
+    });
+
+    if (elements.confirmationModalCloseBtn) elements.confirmationModalCloseBtn.addEventListener('click', () => {
+        closeModal(elements.confirmationModal);
+        if (resolveConfirmation) {
+            resolveConfirmation(false); // Resolve with false if modal is closed without choice
+            resolveConfirmation = null;
+        }
+    });
+
+    if (elements.alertModalCloseBtn) elements.alertModalCloseBtn.addEventListener('click', () => { // New
+        closeModal(elements.alertModal);
+        if (resolveAlert) {
+            resolveAlert(); // Resolve the promise
+            resolveAlert = null;
+        }
+    });
+    
+    // Confirmation Modal Action Listeners
+    if (elements.confirmActionBtn) elements.confirmActionBtn.addEventListener('click', () => {
+        closeModal(elements.confirmationModal);
+        if (resolveConfirmation) {
+            resolveConfirmation(true); // Resolve with true for 'Yes'
+            resolveConfirmation = null;
+        }
+    });
+    if (elements.cancelConfirmBtn) elements.cancelConfirmBtn.addEventListener('click', () => {
+        closeModal(elements.confirmationModal);
+        if (resolveConfirmation) {
+            resolveConfirmation(false); // Resolve with false for 'No'
+            resolveConfirmation = null;
+        }
+    });
+
+    // Alert Modal OK Button Listener (New)
+    if (elements.alertOkBtn) elements.alertOkBtn.addEventListener('click', () => {
+        closeModal(elements.alertModal);
+        if (resolveAlert) {
+            resolveAlert(); // Resolve the promise
+            resolveAlert = null;
+        }
+    });
+
+    if (elements.qrCodeModalCloseBtn) elements.qrCodeModalCloseBtn.addEventListener('click', () => closeModal(elements.qrCodeModal)); // New
+
+    // Close dropdown/modals if clicked outside or ESC key pressed
+    window.addEventListener('click', (event) => {
+        if (elements.savedPlaylistsDropdown && !event.target.closest('.dropdown') && elements.savedPlaylistsDropdown.classList.contains('show')) {
+            elements.savedPlaylistsDropdown.classList.remove('show');
+        }
+        if (elements.welcomeModal && event.target === elements.welcomeModal) {
+            closeModal(elements.welcomeModal);
+            localStorage.setItem(LOCAL_STORAGE_KEYS.WELCOME_MODAL_SHOWN, 'true');
+        }
+        if (elements.confirmationModal && event.target === elements.confirmationModal) {
+            closeModal(elements.confirmationModal);
+            if (resolveConfirmation) {
+                resolveConfirmation(false);
+                resolveConfirmation = null;
+            }
+        }
+        if (elements.alertModal && event.target === elements.alertModal) { // New
+            closeModal(elements.alertModal);
+            if (resolveAlert) {
+                resolveAlert();
+                resolveAlert = null;
+            }
+        }
+        if (elements.qrCodeModal && event.target === elements.qrCodeModal) {
+            closeModal(elements.qrCodeModal);
+        }
+    });
+
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            if (elements.welcomeModal && elements.welcomeModal.style.display === 'block') {
+                closeModal(elements.welcomeModal);
+                localStorage.setItem(LOCAL_STORAGE_KEYS.WELCOME_MODAL_SHOWN, 'true');
+            } else if (elements.confirmationModal && elements.confirmationModal.style.display === 'block') {
+                closeModal(elements.confirmationModal);
+                if (resolveConfirmation) {
+                    resolveConfirmation(false);
+                    resolveConfirmation = null;
+                }
+            } else if (elements.alertModal && elements.alertModal.style.display === 'block') { // New
+                closeModal(elements.alertModal);
+                if (resolveAlert) {
+                    resolveAlert();
+                    resolveAlert = null;
+                }
+            } else if (elements.qrCodeModal && elements.qrCodeModal.style.display === 'block') {
+                closeModal(elements.qrCodeModal);
+            }
+        }
+    });
 
     // --- Initialize on Load ---
     window.onload = () => {
-        loadCurrentChannels(); // Load the last active playlist
-        loadPlaylistsFromLocalStorage(); // Load all saved playlists for the menu
-        // Initialize playlist file name input
-        document.getElementById("playlistFileNameInput").value = "playlist";
+        loadGlobalSettings();
+        loadCurrentChannels();
+        loadPlaylistsFromLocalStorage();
+        if (elements.playlistFileNameInput) {
+            elements.playlistFileNameInput.value = "playlist";
+        }
 
-        // Show welcome modal if it hasn't been shown before
-        const welcomeModalShown = localStorage.getItem(WELCOME_MODAL_SHOWN_KEY);
-        if (!welcomeModalShown) {
-            showWelcomeModal();
+        const welcomeModalShown = localStorage.getItem(LOCAL_STORAGE_KEYS.WELCOME_MODAL_SHOWN);
+        if (!welcomeModalShown && elements.welcomeModal) {
+            showModal(elements.welcomeModal);
         }
     };
   </script>
