@@ -746,7 +746,7 @@
 
     // TMDB API Key (Replace with your actual TMDB API Key)
     const TMDB_API_KEY = 'YOUR_TMDB_API_KEY'; // <--- এখানে আপনার TMDB API Key যোগ করুন!
-    const TMDB_IMAGE_BASE_URL = 'https://image.moviedb.org/t/p/w200'; // Corrected from moviedb.org/t/p/w200 to image.tmdb.org/t/p/w200
+    const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w200'; // Corrected from moviedb.org/t/p/w200 to image.tmdb.org/t/p/w200
 
     // List of common video file extensions for Pixeldrain folder processing
     const videoFileExtensions = [
@@ -1246,7 +1246,7 @@
             return;
         }
         elements.output.select();
-        elements.output.setSelectionRange(0, 99999); // Corrected from setSelectionSelectionRange
+        elements.output.setSelectionRange(0, 99999);
 
         try {
             await navigator.clipboard.writeText(elements.output.value);
@@ -1296,7 +1296,7 @@
             elements.savedPlaylistsDropdown.querySelectorAll('.playlist-name-text').forEach(span => {
                 span.addEventListener('click', (e) => loadSavedPlaylist(e.currentTarget.dataset.playlistName));
             });
-            elements.savedPlay playlistsDropdown.querySelectorAll('.delete-playlist-btn').forEach(button => {
+            elements.savedPlaylistsDropdown.querySelectorAll('.delete-playlist-btn').forEach(button => {
                 button.addEventListener('click', (e) => confirmDeleteSavedPlaylist(e.currentTarget.dataset.playlistName, e));
             });
         }
@@ -1329,7 +1329,7 @@
                 await showCustomAlert(`Playlist "${playlistName}" overwritten successfully!`);
             }
         } else {
-            savedPlaylists = { ...savedPlaylists, [playlistName]: [...currentChannels] }; // Corrected typo: savedPlayplaylists to savedPlaylists
+            savedPlaylists = { ...savedPlaylists, [playlistName]: [...currentChannels] };
             savePlaylistsToLocalStorage();
             renderSavedPlaylistsDropdown();
             await showCustomAlert(`Playlist "${playlistName}" saved successfully!`);
@@ -1435,4 +1435,122 @@
 
         for (let i = 0; i < currentChannels.length; i++) {
             const channel = currentChannels[i];
-            const statusIconElement
+            const statusIconElement = document.getElementById(`status-${i}`);
+            if (statusIconElement) {
+                statusIconElement.innerHTML = '<i class="fas fa-circle-notch fa-spin loading"></i>'; // Loading spinner
+            }
+
+            try {
+                // IMPORTANT NOTE ON STREAM CHECKING:
+                // Direct client-side stream checking using `fetch` with `mode: 'no-cors'`
+                // is inherently limited due to browser's Cross-Origin Resource Sharing (CORS) policy.
+                // When `mode: 'no-cors'` is used, the browser does not expose the actual HTTP status code
+                // of the response (e.g., 200 OK, 404 Not Found, 500 Internal Server Error) to JavaScript.
+                // It simply indicates if the request was sent and received a response at all,
+                // without revealing whether the resource actually exists or is playable.
+                // Therefore, even for an invalid URL, a 'successful' (non-network error) response
+                // might still occur, leading to a misleading 'OK' status.
+
+                // For a truly reliable stream status check (e.g., verifying if a stream is live or a file exists),
+                // you would typically need a **server-side proxy**.
+                // 1. Your client-side JavaScript sends the stream URL to your server.
+                // 2. Your server makes the request to the stream URL (bypassing browser CORS restrictions).
+                // 3. Your server then returns the actual HTTP status code and other relevant information
+                //    back to your client-side JavaScript.
+
+                // The current implementation is a basic attempt to check reachability from the client,
+                // but its accuracy for determining actual stream validity is limited.
+                const response = await fetch(channel.url, { method: 'HEAD', mode: 'no-cors' });
+                
+                // If a response is received without a network error, we assume it's reachable.
+                // This does NOT guarantee the stream is playable or the URL returns valid content.
+                if (statusIconElement) {
+                    statusIconElement.innerHTML = '<i class="fas fa-check-circle ok"></i>'; // Assume OK if no network error on fetch
+                }
+            } catch (error) {
+                console.error(`Error checking stream ${channel.name} (${channel.url}):`, error);
+                if (statusIconElement) {
+                    statusIconElement.innerHTML = '<i class="fas fa-times-circle error"></i>'; // Error (e.g., network disconnected, invalid domain)
+                }
+            }
+            await new Promise(resolve => setTimeout(resolve, 200)); // Small delay to prevent overwhelming requests
+        }
+
+        if (elements.checkStreamsBtn) {
+            elements.checkStreamsBtn.disabled = false;
+            elements.checkStreamsBtn.innerHTML = '<i class="fas fa-signal"></i> Check Streams';
+        }
+        await showCustomAlert("Stream checking complete! (Note: Client-side checks are limited and may not guarantee stream playability due to browser security policies.)");
+    }
+
+
+    // --- Event Listeners ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize elements object and check for their existence
+        elements.logoAll = document.getElementById("logoAll");
+        if (!elements.logoAll) console.error("Element #logoAll not found!");
+
+        elements.globalGroup = document.getElementById("globalGroup");
+        if (!elements.globalGroup) console.error("Element #globalGroup not found!");
+
+        elements.channelName = document.getElementById("channelName");
+        if (!elements.channelName) console.error("Element #channelName not found!");
+
+        elements.channelURL = document.getElementById("channelURL");
+        if (!elements.channelURL) console.error("Element #channelURL not found!");
+
+        elements.channelLogo = document.getElementById("channelLogo");
+        if (!elements.channelLogo) console.error("Element #channelLogo not found!");
+
+        elements.addChannelBtn = document.getElementById("addChannelBtn");
+        if (!elements.addChannelBtn) console.error("Element #addChannelBtn not found!");
+
+        elements.checkStreamsBtn = document.getElementById("checkStreamsBtn");
+        if (!elements.checkStreamsBtn) console.error("Element #checkStreamsBtn not found!");
+
+        elements.channelSearchInput = document.getElementById("channelSearchInput");
+        if (!elements.channelSearchInput) console.error("Element #channelSearchInput not found!");
+
+        elements.previewList = document.getElementById("previewList"); // This is the parent for channel previews
+        if (!elements.previewList) console.error("Element #previewList not found!");
+
+        elements.savedPlaylistsToggleBtn = document.getElementById("savedPlaylistsToggleBtn");
+        if (!elements.savedPlaylistsToggleBtn) console.error("Element #savedPlaylistsToggleBtn not found!");
+
+        elements.savedPlaylistsDropdown = document.getElementById("savedPlaylistsDropdown");
+        if (!elements.savedPlaylistsDropdown) console.error("Element #savedPlaylistsDropdown not found!");
+
+        elements.savedPlaylistsCount = document.getElementById("savedPlaylistsCount");
+        if (!elements.savedPlaylistsCount) console.error("Element #savedPlaylistsCount not found!");
+
+        elements.playlistFileNameInput = document.getElementById("playlistFileNameInput");
+        if (!elements.playlistFileNameInput) console.error("Element #playlistFileNameInput not found!");
+
+        elements.savePlaylistBtn = document.getElementById("savePlaylistBtn");
+        if (!elements.savePlaylistBtn) console.error("Element #savePlaylistBtn not found!");
+
+        elements.generateM3UBtn = document.getElementById("generateM3UBtn");
+        if (!elements.generateM3UBtn) console.error("Element #generateM3UBtn not found!");
+
+        elements.downloadM3UBtn = document.getElementById("downloadM3UBtn");
+        if (!elements.downloadM3UBtn) console.error("Element #downloadM3UBtn not found!");
+
+        elements.copyOutputBtn = document.getElementById("copyOutputBtn");
+        if (!elements.copyOutputBtn) console.error("Element #copyOutputBtn not found!");
+
+        elements.clearCurrentBtn = document.getElementById("clearCurrentBtn");
+        if (!elements.clearCurrentBtn) console.error("Element #clearCurrentBtn not found!");
+
+        elements.generateQrCodeBtn = document.getElementById("generateQrCodeBtn");
+        if (!elements.generateQrCodeBtn) console.error("Element #generateQrCodeBtn not found!");
+
+        elements.output = document.getElementById("output");
+        if (!elements.output) console.error("Element #output not found!");
+
+        elements.welcomeModal = document.getElementById("welcomeModal");
+        if (!elements.welcomeModal) console.error("Element #welcomeModal not found!");
+
+        elements.welcomeModalOkBtn = document.getElementById("welcomeModalOkBtn");
+        if (!elements.welcomeModalOkBtn) console.error("Element #welcomeModalOkBtn not found!");
+
+        elements
