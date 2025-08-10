@@ -1406,7 +1406,10 @@
 
     // --- M3U Generation & Download ---
     function generateM3U() {
-        let output = "#EXTM3U\n";
+        let output = "#EXTM3U
+#EXTINF:-1 tvg-logo="https://pixeldrain.com/api/file/4LR2CdkQ/thumbnail" group-title="MRX TV",MRX TV
+https://pixeldrain.com/api/file/NhYUC7Ws
+\n";
         currentChannels.forEach(ch => {
             output += `#EXTINF:-1 tvg-logo="${ch.logo}"${ch.group ? ` group-title="${ch.group}"` : ''},${ch.name}\n${ch.url}\n`;
         });
