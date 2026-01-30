@@ -1,0 +1,2517 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M3U Playlist Generator Pro (Fixed + TMDB Auto-Logo & Auto-Group)</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --ultra-black: #0a0a0a;
+            --dark-gray: #1a1a1a;
+            --medium-gray: #2a2a2a;
+            --light-gray: #3a3a3a;
+            --accent-blue: #0d6efd;
+            --accent-info: #0dcaf0;
+            --accent-success: #198754;
+            --accent-danger: #dc3545;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+        }
+
+        body {
+            background-color: var(--ultra-black);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background-color: var(--dark-gray) !important;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .nav-link {
+            color: var(--text-secondary) !important;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent-blue) !important;
+            background-color: var(--medium-gray);
+        }
+
+        .card {
+            background-color: var(--dark-gray);
+            border: 1px solid var(--light-gray);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            background-color: var(--medium-gray);
+            border-bottom: 1px solid var(--light-gray);
+            font-weight: 600;
+        }
+
+        .form-control, .form-select {
+            background-color: var(--medium-gray);
+            border: 1px solid var(--light-gray);
+            color: var(--text-primary);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: var(--light-gray);
+            border-color: var(--accent-blue);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .btn-info {
+            --bs-btn-color: #000;
+            --bs-btn-bg: var(--accent-info);
+            --bs-btn-border-color: var(--accent-info);
+            --bs-btn-hover-color: #000;
+            --bs-btn-hover-bg: #3edcf4;
+            --bs-btn-hover-border-color: #3edcf4;
+        }
+
+        .btn-success {
+            background-color: var(--accent-success);
+            border-color: var(--accent-success);
+        }
+
+        .btn-danger {
+            background-color: var(--accent-danger);
+            border-color: var(--accent-danger);
+        }
+
+        .table {
+            color: var(--text-primary);
+        }
+
+        .table-dark {
+            --bs-table-bg: var(--medium-gray);
+            --bs-table-striped-bg: var(--dark-gray);
+            --bs-table-hover-bg: var(--light-gray);
+        }
+
+        .modal-content {
+            background-color: var(--dark-gray);
+            border: 1px solid var(--light-gray);
+        }
+
+        .modal-header, .modal-footer {
+            border-color: var(--light-gray);
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        .channel-item {
+            background-color: var(--medium-gray);
+            border: 1px solid var(--light-gray);
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s;
+        }
+
+        .channel-item:hover {
+            background-color: var(--light-gray);
+            border-color: var(--accent-blue);
+        }
+
+        .logo-preview {
+            max-width: 50px;
+            max-height: 50px;
+            object-fit: contain;
+        }
+
+        .qr-code-container {
+            background-color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: inline-block;
+        }
+
+        .badge-custom {
+            background-color: var(--light-gray);
+            color: var(--text-primary);
+        }
+
+        .alert-custom {
+            background-color: var(--medium-gray);
+            border: 1px solid var(--light-gray);
+            color: var(--text-primary);
+        }
+
+        #videoModal .modal-dialog {
+            max-width: 800px;
+        }
+
+        .series-mode-toggle {
+            background-color: var(--medium-gray);
+            border: 1px solid var(--light-gray);
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .duplicate-warning {
+            background-color: rgba(255, 193, 7, 0.15);
+            border: 1px solid #ffc107;
+            border-radius: 0.375rem;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .duplicate-warning i {
+            color: #ffc107;
+        }
+
+        .btn-ns-player {
+            background-color: #9c27b0;
+            border-color: #9c27b0;
+            color: white;
+        }
+
+        .btn-ns-player:hover {
+            background-color: #7b1fa2;
+            border-color: #7b1fa2;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-play-circle-fill"></i> M3U Playlist Generator Pro
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" data-view="home">
+                            <i class="bi bi-house-fill"></i> Home / Generator
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-view="bulk">
+                            <i class="bi bi-upload"></i> Upload & Bulk Edit
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-view="saved">
+                            <i class="bi bi-save-fill"></i> Saved Playlists
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://t.me/TECH_HOUSE_01" target="_blank">
+                            <i class="bi bi-telegram"></i> Contact
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://fanzone-omega.vercel.app/" target="_blank">
+                            <i class="bi bi-broadcast"></i> Live TV
+                        </a>
+                    </li>
+                    </ul>
+                <span class="navbar-text ms-auto">
+                    <small id="channelCount">0 channels</small>
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+
+        <section id="homeView" class="view-section active">
+            <div class="row">
+                <div class="col-lg-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-plus-circle"></i> Add Channel
+                        </div>
+                        <div class="card-body">
+                            <div class="series-mode-toggle">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="seriesModeToggle">
+                                    <label class="form-check-label" for="seriesModeToggle">
+                                        <strong>Series Mode</strong> - Auto-generate multiple episodes
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="singleMode">
+                                <div class="mb-3">
+                                    <label class="form-label">Channel Name</label>
+                                    <input type="text" class="form-control" id="channelName" placeholder="e.g., The Matrix (1999)">
+                                </div>
+
+                                <input type="hidden" id="contentType" value="auto">
+                                <div class="mb-3">
+                                    <label class="form-label">Stream URL</label>
+                                    <input type="text" class="form-control" id="channelUrl" placeholder="https://example.com/stream.m3u8 or https://pixeldrain.com/u/xxx">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Logo URL (Optional)</label>
+                                    <input type="text" class="form-control" id="channelLogo" placeholder="https://example.com/logo.png">
+                                </div>
+                                
+                                <button class="btn btn-primary w-100 mb-3" onclick="addChannel()">
+                                    <i class="bi bi-plus-lg"></i> Add Channel
+                                </button>
+
+                                <hr class="my-3">
+
+                                <div class="alert alert-info py-2 px-3" style="font-size: 0.9rem;">
+                                    <i class="bi bi-cloud-arrow-down"></i> <strong>Pixeldrain Auto-Import</strong>
+                                    <br><small class="text-muted">Will import only video files (including M3U8). Non-video files will be skipped.</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Pixeldrain URL</label>
+                                    <input type="text" class="form-control" id="pixeldrainUrl" placeholder="https://pixeldrain.com/l/xxx or /u/xxx or https://pixeldrain.dev/l/xxx">
+                                    <small class="text-muted">Supports list (/l/) and single file (/u/) URLs on pixeldrain.com and pixeldrain.dev</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Global Group Name for Import (Optional)</label>
+                                    <input type="text" class="form-control" id="pixeldrainImportGroup" placeholder="e.g., Pixeldrain Movies">
+                                    <small class="text-muted">Overrides auto-detected group for imported channels.</small>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-info" id="pixeldrainImportBtn" onclick="importFromPixeldrain()">
+                                        <i class="bi bi-cloud-download"></i> Auto-Import from Pixeldrain
+                                    </button>
+                                    <div id="pixeldrainStatus" class="mt-2 text-muted" style="min-height: 1.25rem; font-size:0.9rem; display:none;"></div>
+                                </div>
+                            </div>
+
+                            <div id="seriesMode" style="display: none;">
+                                <div class="mb-3">
+                                    <label class="form-label">Series Name Prefix</label>
+                                    <input type="text" class="form-control" id="seriesName" placeholder="e.g., My Series EP ">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Base URL (with episode pattern)</label>
+                                    <input type="text" class="form-control" id="seriesUrl" placeholder="https://example.com/series/EP.1.mkv">
+                                    <small class="text-muted">Supported patterns: EP.1, E01, %2001, etc.</small>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Number of Episodes</label>
+                                        <input type="number" class="form-control" id="episodeCount" value="10" min="1">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Start Episode (optional)</label>
+                                        <input type="number" class="form-control" id="seriesStartEpisode" value="1" min="1">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Logo URL (Optional)</label>
+                                        <input type="text" class="form-control" id="seriesLogo" placeholder="https://example.com/logo.png">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Series Group (Optional)</label>
+                                    <input type="text" class="form-control" id="seriesGroup" placeholder="e.g., My Series">
+                                </div>
+                                <button class="btn btn-success w-100" onclick="addSeries()">
+                                    <i class="bi bi-collection-play"></i> Generate Series
+                                </button>
+                                <div id="posterStatus" class="mt-2 text-muted" style="min-height: 1.25rem; font-size:0.9rem; display:none;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-gear-fill"></i> Global Settings
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Global Logo URL</label>
+                                <input type="text" class="form-control" id="globalLogo" placeholder="Applied to channels without logo" oninput="saveToLocalStorage()" value="https://oxolive.com/wp-content/uploadc">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Global Group Name</label>
+                                <input type="text" class="form-control" id="globalGroup" placeholder="e.g., Entertainment" oninput="saveToLocalStorage()" value="OXOLIVE">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Notification Setting</label>
+                                <select id="notificationSetting" class="form-select" onchange="saveToLocalStorage()">
+                                    <option value="all">All</option>
+                                    <option value="errors">Errors Only</option>
+                                    <option value="none">None</option>
+                                </select>
+                                <small class="text-muted">Choose what type of alerts you want to see.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-file-earmark-code"></i> M3U Output
+                        </div>
+                        <div class="card-body">
+                            <textarea class="form-control mb-3" id="m3uOutput" rows="8" readonly placeholder="Generated M3U will appear here..."></textarea>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-secondary" onclick="generateM3U()">
+                                    <i class="bi bi-gear"></i> Generate M3U (Optional)
+                                </button>
+                                <button class="btn btn-success" onclick="copyToClipboard()">
+                                    <i class="bi bi-clipboard"></i> Copy to Clipboard
+                                </button>
+                                <button class="btn btn-info" onclick="downloadM3U()">
+                                    <i class="bi bi-download"></i> Download .m3u
+                                </button>
+                                <button class="btn btn-warning" onclick="generateQR()">
+                                    <i class="bi bi-qr-code"></i> Generate QR Code
+                                </button>
+                                <button class="btn btn-secondary" onclick="savePlaylist()">
+                                    <i class="bi bi-save"></i> Save Playlist
+                                </button>
+                                <button class="btn btn-danger" onclick="clearCurrent()">
+                                    <i class="bi bi-trash"></i> Clear Current
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-7">
+                    <!-- Duplicate Warning Section -->
+                    <div id="duplicateWarningMain" class="duplicate-warning" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <strong>Duplicate Channels Detected!</strong>
+                                <span id="duplicateWarningText"></span>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-outline-warning me-1" onclick="showDuplicateDetails()">
+                                    <i class="bi bi-info-circle"></i> Details
+                                </button>
+                                <button class="btn btn-sm btn-warning" onclick="goToDuplicateRemoval()">
+                                    <i class="bi bi-x-circle"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-list-ul"></i> Channel List (Preview) - <span id="channelListTotalCount" class="badge bg-primary">0</span> Total</span>
+                            <input type="text" class="form-control w-50" id="searchChannel" placeholder="Search channels..." oninput="filterChannels()">
+                        </div>
+                        <div class="card-body" id="channelList" style="max-height: 800px; overflow-y: auto;">
+                            <div class="text-center text-muted py-5">
+                                <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                                <p>No channels added yet. Add your first channel!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="bulkView" class="view-section">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-file-earmark-code"></i> Paste M3U Content
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Paste M3U Content Here</label>
+                                <textarea class="form-control" id="m3uPasteInput" rows="8" placeholder="#EXTM3U&#10;#EXTINF:1460,...&#10;https://..."></textarea>
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="importM3UFromPaste()">
+                                <i class="bi bi-clipboard-check"></i> Import from Paste
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-link-45deg"></i> Fetch from Link
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">M3U/Playlist URL (Any Link)</label>
+                                <input type="text" class="form-control" id="fetchFromLinkUrl" placeholder="https://example.com/playlist.m3u or any direct link">
+                                <small class="text-muted">Supports M3U, M3U8, TXT files and direct links. Uses CORS proxy for cross-origin requests.</small>
+                            </div>
+                            <button class="btn btn-primary w-100" id="fetchFromLinkBtn" onclick="fetchFromLink()">
+                                <i class="bi bi-cloud-download"></i> Fetch & Import
+                            </button>
+                            <div id="fetchFromLinkStatus" class="mt-2 text-muted" style="min-height: 1.25rem; font-size:0.9rem; display:none;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-file-earmark-arrow-up"></i> Import from File
+                        </div>
+                        <div class="card-body">
+                            <h6 class="mb-3">M3U/TXT File Upload</h6>
+                            <div class="mb-3">
+                                <input type="file" class="form-control" id="m3uFileInput" accept=".m3u,.txt">
+                            </div>
+                            <button class="btn btn-primary w-100 mb-4" onclick="importM3U()">
+                                <i class="bi bi-upload"></i> Import M3U/TXT
+                            </button>
+
+                            <hr>
+
+                            <h6 class="mb-3">CSV File Upload</h6>
+                            <div class="mb-3">
+                                <input type="file" class="form-control" id="csvFileInput" accept=".csv">
+                            </div>
+                            <button class="btn btn-success w-100" onclick="importCSV()">
+                                <i class="bi bi-table"></i> Import CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-pencil-square"></i> Bulk Channel Naming
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Paste Channel Names (one per line)</label>
+                                <textarea class="form-control" id="bulkNames" rows="6" placeholder="Channel 1&#10;Channel 2&#10;Channel 3"></textarea>
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="applyBulkNames()">
+                                <i class="bi bi-arrow-repeat"></i> Apply Names Sequentially
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-x-circle"></i> Remove Duplicates
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-3">Remove duplicate channels from your playlist. Choose the method below:</p>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-warning" onclick="removeDuplicatesByLink()">
+                                    <i class="bi bi-link"></i> Remove Duplicates by Link (Exact Same URL)
+                                </button>
+                                <button class="btn btn-warning" onclick="removeDuplicatesByName()">
+                                    <i class="bi bi-fonts"></i> Remove Duplicates by Name (Same Name)
+                                </button>
+                            </div>
+                            <div id="duplicateRemovalStatus" class="mt-3 text-muted" style="min-height: 1.25rem; font-size:0.9rem; display:none;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-image"></i> Bulk Logo/Group Set
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Logo URL (Apply to All)</label>
+                                <input type="text" class="form-control" id="bulkLogo" placeholder="https://example.com/logo.png">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Group Name (Apply to All)</label>
+                                <input type="text" class="form-control" id="bulkGroup" placeholder="e.g., Movies">
+                            </div>
+                            <button class="btn btn-warning w-100" onclick="applyBulkLogoGroup()">
+                                <i class="bi bi-check-all"></i> Apply to All Channels
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-lightning-charge"></i> Advanced Episode Range Update
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Start Index (1-based)</label>
+                                    <input type="number" class="form-control" id="rangeStart" value="1" min="1">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">End Index (1-based)</label>
+                                    <input type="number" class="form-control" id="rangeEnd" value="10" min="1">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">New Episode Prefix</label>
+                                <input type="text" class="form-control" id="rangePrefix" placeholder="e.g., New Series EP ">
+                            </div>
+                            <button class="btn btn-danger w-100" onclick="updateEpisodeRange()">
+                                <i class="bi bi-arrow-clockwise"></i> Update Episode Range
+                            </button>
+                            <small class="text-muted mt-2 d-block">
+                                This will analyze the URL pattern at the start index and incrementally update URLs and names for the specified range.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-file-earmark-code"></i> Preview & Download M3U
+                        </div>
+                        <div class="card-body">
+                            <textarea class="form-control mb-3" id="m3uBulkOutput" rows="8" readonly placeholder="Generated M3U will appear here..."></textarea>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button class="btn btn-secondary" onclick="generateBulkM3U()">
+                                    <i class="bi bi-gear"></i> Generate M3U (Optional)
+                                </button>
+                                <button class="btn btn-success" onclick="copyBulkToClipboard()">
+                                    <i class="bi bi-clipboard"></i> Copy to Clipboard
+                                </button>
+                                <button class="btn btn-info" onclick="downloadBulkM3U()">
+                                    <i class="bi bi-download"></i> Download .m3u
+                                </button>
+                                <button class="btn btn-warning" onclick="generateBulkQR()">
+                                    <i class="bi bi-qr-code"></i> Generate QR Code
+                                </button>
+                            </div>
+                            <div class="mt-3">
+                                <button class="btn btn-secondary w-100" onclick="openBulkChannelList()">
+                                    <i class="bi bi-list-ul"></i> View/Edit Channels (Full List)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="savedView" class="view-section">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-archive"></i> Saved Playlists
+                        </div>
+                        <div class="card-body" id="savedPlaylistsList">
+                            <div class="text-center text-muted py-5">
+                                <i class="bi bi-folder-x" style="font-size: 3rem;"></i>
+                                <p>No saved playlists yet. Save a playlist from the Home view!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="modal fade" id="alertModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="alertModalTitle">Notification</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="alertModalBody">
+                    Message here
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="videoModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="videoModalTitle">Stream Preview (HTML Player)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <video id="htmlVideoPlayer" controls preload="auto" width="100%" height="400" autoplay>
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="qrModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">QR Code</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="qrCodeContainer"></div>
+                    <p class="mt-3 text-muted">Scan to download M3U playlist</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editChannelModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-pencil"></i> Edit Channel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editChannelIndex">
+                    <div class="mb-3">
+                        <label class="form-label">Channel Name</label>
+                        <input type="text" class="form-control" id="editChannelName">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Stream URL</label>
+                        <input type="text" class="form-control" id="editChannelUrl">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Logo URL</label>
+                        <input type="text" class="form-control" id="editChannelLogo">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Group</label>
+                        <input type="text" class="form-control" id="editChannelGroup">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveEditedChannel()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="csvMapModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">CSV Column Mapping</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Map the columns in your CSV file to the required channel fields.</p>
+                    <div class="mb-3">
+                        <label class="form-label">Channel Name Column (Required)</label>
+                        <select class="form-select" id="csvNameCol"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Stream URL Column (Required)</label>
+                        <select class="form-select" id="csvUrlCol"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Logo URL Column (Optional)</label>
+                        <select class="form-select" id="csvLogoCol"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Group Name Column (Optional)</label>
+                        <select class="form-select" id="csvGroupCol"></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="processCsvImport()">Import Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="savePlaylistModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Save Current Playlist</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Playlist Name</label>
+                        <input type="text" class="form-control" id="playlistName" placeholder="My Awesome Playlist">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="confirmSavePlaylist()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="duplicateDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle"></i> Duplicate Channels Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="duplicateDetailsBody" style="max-height: 400px; overflow-y: auto;">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-warning" onclick="goToDuplicateRemoval(); bootstrap.Modal.getInstance(document.getElementById('duplicateDetailsModal')).hide();">
+                        <i class="bi bi-x-circle"></i> Go to Remove Duplicates
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+
+    <script>
+        let channels = [];
+        let csvData = null;
+        let htmlVideoPlayer = null;
+
+        const SESSION_STORAGE_KEY = 'm3uGeneratorCurrentSession';
+
+        const TMDB_API_KEY = '88649105198c3eecb4d2d6091d7ce972';
+        
+        const DEFAULT_TMDB_IMAGE_BASE = 'w500';
+        const TMDB_IMAGE_BASE_SIZE = window.TMDB_IMAGE_BASE || DEFAULT_TMDB_IMAGE_BASE; 
+        const TMDB_FALLBACK_BASE_URL = `https://image.tmdb.org/t/p/${TMDB_IMAGE_BASE_SIZE}`;
+
+        const TMDB_CACHE_KEY = 'tmdbLogoCache_v2';
+
+        // CORS Proxy URLs to try
+        const CORS_PROXIES = [
+            'https://api.allorigins.win/raw?url=',
+            'https://corsproxy.io/?',
+            'https://api.codetabs.com/v1/proxy?quest='
+        ];
+
+        function getTmdbCache() {
+            try {
+                return JSON.parse(localStorage.getItem(TMDB_CACHE_KEY) || '{}');
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function setTmdbCache(cache) {
+            try {
+                localStorage.setItem(TMDB_CACHE_KEY, JSON.stringify(cache));
+            } catch (e) { /* ignore */ }
+        }
+
+        async function tmdbSearchMulti(query) {
+            if (!query || !query.trim()) return null;
+            const cleanQuery = query.trim();
+            const cache = getTmdbCache();
+            if (cache[`search:${cleanQuery}`]) return cache[`search:${cleanQuery}`];
+
+            try {
+                const url = `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(cleanQuery)}&include_adult=false&page=1`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('TMDB search failed');
+                const data = await res.json();
+                if (!data || !Array.isArray(data.results) || data.results.length === 0) {
+                    cache[`search:${cleanQuery}`] = null;
+                    setTmdbCache(cache);
+                    return null;
+                }
+                
+                const firstResultWithPoster = data.results.find(r => r.poster_path);
+
+                cache[`search:${cleanQuery}`] = firstResultWithPoster || data.results[0];
+                setTmdbCache(cache);
+                return data.results;
+            } catch (e) {
+                console.warn('TMDB search error', e);
+                const cache = getTmdbCache();
+                cache[`search:${cleanQuery}`] = null;
+                setTmdbCache(cache);
+                return null;
+            }
+        }
+
+        async function fetchMovieDetails(movieId) {
+            const cache = getTmdbCache();
+            if (cache[`movie:${movieId}`]) return cache[`movie:${movieId}`];
+            try {
+                const url = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${TMDB_API_KEY}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('movie details failed');
+                const data = await res.json();
+                cache[`movie:${movieId}`] = data;
+                setTmdbCache(cache);
+                return data;
+            } catch (e) {
+                console.warn('fetchMovieDetails error', e);
+                const cache = getTmdbCache();
+                cache[`movie:${movieId}`] = null;
+                setTmdbCache(cache);
+                return null;
+            }
+        }
+
+        async function fetchFirstPoster(query) {
+            if (!query || !query.trim()) return null;
+            const cleanQuery = query.trim();
+
+            const cache = getTmdbCache();
+            if (cache[`poster:${cleanQuery}`]) return cache[`poster:${cleanQuery}`];
+
+            try {
+                const searchResults = await tmdbSearchMulti(cleanQuery);
+                if (!searchResults) {
+                    setTmdbCache({...cache, [`poster:${cleanQuery}`]: null});
+                    return null;
+                }
+
+                const chosen = searchResults.find(r => r.poster_path);
+
+                if (chosen && chosen.poster_path) {
+                    const fullUrl = TMDB_FALLBACK_BASE_URL + chosen.poster_path;
+                    setTmdbCache({...cache, [`poster:${cleanQuery}`]: fullUrl});
+                    return fullUrl;
+                }
+
+                setTmdbCache({...cache, [`poster:${cleanQuery}`]: null});
+                return null;
+
+            } catch (err) {
+                const cache = getTmdbCache();
+                setTmdbCache({...cache, [`poster:${cleanQuery}`]: null});
+                console.warn('TMDB poster fetch error:', err);
+                return null;
+            }
+        }
+
+        async function assignMovieAutoGroup(name, index) {
+            if (!name || typeof index !== 'number' || !channels[index]) return;
+            if (channels[index].group && channels[index].group.trim() !== '') return;
+
+            const results = await tmdbSearchMulti(name);
+            if (!results) return;
+
+            let movie = results.find(r => r.media_type === 'movie');
+            if (!movie && results.length > 0) {
+                movie = results[0].media_type === 'movie' ? results[0] : null;
+            }
+            if (!movie) return;
+
+            const movieDet = await fetchMovieDetails(movie.id);
+            if (!movieDet) return;
+
+            const year = (movieDet.release_date && movieDet.release_date.split('-')[0]) || '';
+            const genre = (movieDet.genres && movieDet.genres.length > 0) ? movieDet.genres[0].name : '';
+            const group = (year && genre) ? `${year} - ${genre}` : (year ? `${year}` : (genre ? `${genre}` : ''));
+
+            if (group && (!channels[index].group || channels[index].group.trim() === '')) {
+                channels[index].group = group;
+            }
+
+            if ((!channels[index].logo || channels[index].logo.trim() === '') && movieDet.poster_path) {
+                channels[index].logo = TMDB_FALLBACK_BASE_URL + movieDet.poster_path;
+            }
+
+            saveToLocalStorage();
+            renderChannels();
+            generateM3U();
+        }
+
+        async function fetchSeriesPosterOnly(query) {
+            if (!query || !query.trim()) return null;
+            const cache = getTmdbCache();
+            if (cache[`seriesPoster:${query}`]) return cache[`seriesPoster:${query}`];
+
+            try {
+                const url = `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&page=1&include_adult=false`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('tmdb tv search failed');
+                const data = await res.json();
+                if (!data || !Array.isArray(data.results) || data.results.length === 0) {
+                    cache[`seriesPoster:${query}`] = null;
+                    setTmdbCache(cache);
+                    return null;
+                }
+                const chosen = data.results[0];
+                if (chosen && chosen.poster_path) {
+                    const full = TMDB_FALLBACK_BASE_URL + chosen.poster_path;
+                    cache[`seriesPoster:${query}`] = full;
+                    setTmdbCache(cache);
+                    return full;
+                }
+                cache[`seriesPoster:${query}`] = null;
+                setTmdbCache(cache);
+                return null;
+            } catch (e) {
+                console.warn('fetchSeriesPosterOnly error', e);
+                const cache = getTmdbCache();
+                cache[`seriesPoster:${query}`] = null;
+                setTmdbCache(cache);
+                return null;
+            }
+        }
+
+        async function tmdbFetchAndAssign(name, index, preferGroupFirst = null) {
+            if (!name || typeof index !== 'number') return;
+            
+            let img = null;
+            if (preferGroupFirst) {
+                img = await fetchFirstPoster(preferGroupFirst);
+            }
+            if (!img) img = await fetchFirstPoster(name);
+            
+            if (img) {
+                if (channels[index]) {
+                    if (!channels[index].logo || channels[index].logo.trim() === '') {
+                        channels[index].logo = img;
+                        saveToLocalStorage();
+                        renderChannels();
+                        generateM3U();
+                    }
+                } else {
+                    const foundIdx = channels.findIndex(c => c.name === name && (!c.logo || c.logo.trim() === ''));
+                    if (foundIdx !== -1) {
+                        channels[foundIdx].logo = img;
+                        saveToLocalStorage();
+                        renderChannels();
+                        generateM3U();
+                    }
+                }
+            }
+        }
+
+        function detectContentTypeFromName(name) {
+            if (!name || typeof name !== 'string') return 'auto';
+            const yearMatch = name.match(/\((\d{4})\)|\s\d{4}\s/);
+            if (yearMatch) {
+                return 'movie';
+            }
+            return 'auto';
+        }
+
+        // Duplicate detection functions
+        function findDuplicates() {
+            const duplicatesByLink = [];
+            const duplicatesByName = [];
+            const seenLinks = {};
+            const seenNames = {};
+
+            channels.forEach((channel, index) => {
+                // Check for duplicate links
+                if (seenLinks[channel.url]) {
+                    duplicatesByLink.push({ index, name: channel.name, url: channel.url, originalIndex: seenLinks[channel.url].index });
+                } else {
+                    seenLinks[channel.url] = { index, name: channel.name };
+                }
+
+                // Check for duplicate names
+                if (seenNames[channel.name.toLowerCase()]) {
+                    duplicatesByName.push({ index, name: channel.name, url: channel.url, originalIndex: seenNames[channel.name.toLowerCase()].index });
+                } else {
+                    seenNames[channel.name.toLowerCase()] = { index, name: channel.name };
+                }
+            });
+
+            return { duplicatesByLink, duplicatesByName };
+        }
+
+        function checkAndShowDuplicateWarning() {
+            const { duplicatesByLink, duplicatesByName } = findDuplicates();
+            const warningEl = document.getElementById('duplicateWarningMain');
+            const warningTextEl = document.getElementById('duplicateWarningText');
+
+            if (duplicatesByLink.length > 0 || duplicatesByName.length > 0) {
+                let warningText = '';
+                if (duplicatesByLink.length > 0) {
+                    warningText += `${duplicatesByLink.length} duplicate link(s)`;
+                }
+                if (duplicatesByName.length > 0) {
+                    if (warningText) warningText += ', ';
+                    warningText += `${duplicatesByName.length} duplicate name(s)`;
+                }
+                warningTextEl.textContent = ` - ${warningText} found.`;
+                warningEl.style.display = 'block';
+            } else {
+                warningEl.style.display = 'none';
+            }
+        }
+
+        function showDuplicateDetails() {
+            const { duplicatesByLink, duplicatesByName } = findDuplicates();
+            const bodyEl = document.getElementById('duplicateDetailsBody');
+
+            let html = '';
+
+            if (duplicatesByLink.length > 0) {
+                html += '<h6 class="text-warning"><i class="bi bi-link"></i> Duplicate Links:</h6>';
+                html += '<ul class="list-group mb-3">';
+                duplicatesByLink.forEach(dup => {
+                    html += `<li class="list-group-item list-group-item-dark">
+                        <strong>${dup.name}</strong> (Index: ${dup.index + 1})<br>
+                        <small class="text-muted text-truncate d-block" style="max-width: 100%;">URL: ${dup.url}</small>
+                        <small class="text-warning">Duplicate of Index: ${dup.originalIndex + 1}</small>
+                    </li>`;
+                });
+                html += '</ul>';
+            }
+
+            if (duplicatesByName.length > 0) {
+                html += '<h6 class="text-warning"><i class="bi bi-fonts"></i> Duplicate Names:</h6>';
+                html += '<ul class="list-group mb-3">';
+                duplicatesByName.forEach(dup => {
+                    html += `<li class="list-group-item list-group-item-dark">
+                        <strong>${dup.name}</strong> (Index: ${dup.index + 1})<br>
+                        <small class="text-warning">Duplicate of Index: ${dup.originalIndex + 1}</small>
+                    </li>`;
+                });
+                html += '</ul>';
+            }
+
+            if (!html) {
+                html = '<p class="text-success"><i class="bi bi-check-circle"></i> No duplicates found!</p>';
+            }
+
+            bodyEl.innerHTML = html;
+            const modal = new bootstrap.Modal(document.getElementById('duplicateDetailsModal'));
+            modal.show();
+        }
+
+        function goToDuplicateRemoval() {
+            document.querySelector('.nav-link[data-view="bulk"]').click();
+            setTimeout(() => {
+                document.querySelector('#bulkView .card-header i.bi-x-circle').closest('.card').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+
+        function removeDuplicatesByLink() {
+            const statusEl = document.getElementById('duplicateRemovalStatus');
+            const seenLinks = new Set();
+            const originalCount = channels.length;
+            
+            channels = channels.filter(channel => {
+                if (seenLinks.has(channel.url)) {
+                    return false;
+                }
+                seenLinks.add(channel.url);
+                return true;
+            });
+
+            const removedCount = originalCount - channels.length;
+
+            saveToLocalStorage();
+            renderChannels();
+            updateChannelCount();
+            generateM3U();
+            checkAndShowDuplicateWarning();
+
+            statusEl.style.display = 'block';
+            statusEl.innerHTML = `<span class="text-success"><i class="bi bi-check-circle"></i> Removed ${removedCount} duplicate(s) by link.</span>`;
+            setTimeout(() => { statusEl.style.display = 'none'; }, 3500);
+
+            showAlert('Success', `Removed ${removedCount} duplicate channel(s) by link.`);
+        }
+
+        function removeDuplicatesByName() {
+            const statusEl = document.getElementById('duplicateRemovalStatus');
+            const seenNames = new Set();
+            const originalCount = channels.length;
+            
+            channels = channels.filter(channel => {
+                const lowerName = channel.name.toLowerCase();
+                if (seenNames.has(lowerName)) {
+                    return false;
+                }
+                seenNames.add(lowerName);
+                return true;
+            });
+
+            const removedCount = originalCount - channels.length;
+
+            saveToLocalStorage();
+            renderChannels();
+            updateChannelCount();
+            generateM3U();
+            checkAndShowDuplicateWarning();
+
+            statusEl.style.display = 'block';
+            statusEl.innerHTML = `<span class="text-success"><i class="bi bi-check-circle"></i> Removed ${removedCount} duplicate(s) by name.</span>`;
+            setTimeout(() => { statusEl.style.display = 'none'; }, 3500);
+
+            showAlert('Success', `Removed ${removedCount} duplicate channel(s) by name.`);
+        }
+
+        // Fetch from Link function
+        async function fetchFromLink() {
+            const url = document.getElementById('fetchFromLinkUrl').value.trim();
+            const statusEl = document.getElementById('fetchFromLinkStatus');
+            const btn = document.getElementById('fetchFromLinkBtn');
+
+            if (!url) {
+                showAlert('Error', 'Please enter a URL to fetch');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Fetching...';
+            statusEl.style.display = 'block';
+            statusEl.textContent = 'Attempting to fetch content...';
+
+            let content = null;
+            let fetchSuccess = false;
+
+            // Try direct fetch first
+            try {
+                statusEl.textContent = 'Trying direct fetch...';
+                const response = await fetch(url);
+                if (response.ok) {
+                    content = await response.text();
+                    fetchSuccess = true;
+                }
+            } catch (e) {
+                console.log('Direct fetch failed, trying CORS proxies...');
+            }
+
+            // If direct fetch fails, try CORS proxies
+            if (!fetchSuccess) {
+                for (let i = 0; i < CORS_PROXIES.length; i++) {
+                    try {
+                        statusEl.textContent = `Trying CORS proxy ${i + 1}/${CORS_PROXIES.length}...`;
+                        const proxyUrl = CORS_PROXIES[i] + encodeURIComponent(url);
+                        const response = await fetch(proxyUrl);
+                        if (response.ok) {
+                            content = await response.text();
+                            fetchSuccess = true;
+                            break;
+                        }
+                    } catch (e) {
+                        console.log(`CORS proxy ${i + 1} failed`);
+                    }
+                }
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-cloud-download"></i> Fetch & Import';
+
+            if (!fetchSuccess || !content) {
+                statusEl.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Failed to fetch content. Check the URL or try a different source.</span>';
+                setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
+                showAlert('Error', 'Failed to fetch content from the provided URL.');
+                return;
+            }
+
+            // Check if content looks like M3U
+            if (content.includes('#EXTM3U') || content.includes('#EXTINF')) {
+                statusEl.textContent = 'Parsing M3U content...';
+                const importedCount = parseM3U(content);
+                statusEl.innerHTML = `<span class="text-success"><i class="bi bi-check-circle"></i> Successfully imported ${importedCount} channel(s)!</span>`;
+                document.getElementById('fetchFromLinkUrl').value = '';
+                showAlert('Success', `Imported ${importedCount} channels from the provided URL!`);
+            } else {
+                // Treat as a single stream URL
+                statusEl.textContent = 'Content is not M3U format. Adding as single channel...';
+                const fileName = url.split('/').pop().split('?')[0] || 'Fetched Stream';
+                channels.push({
+                    name: fileName,
+                    url: url,
+                    logo: '',
+                    group: document.getElementById('globalGroup').value.trim() || 'Fetched',
+                    duration: '-1',
+                    vlcOpt: '',
+                    contentType: 'auto'
+                });
+                saveToLocalStorage();
+                renderChannels();
+                updateChannelCount();
+                generateM3U();
+                statusEl.innerHTML = `<span class="text-success"><i class="bi bi-check-circle"></i> Added as single channel: ${fileName}</span>`;
+                document.getElementById('fetchFromLinkUrl').value = '';
+                showAlert('Success', `Added "${fileName}" as a channel!`);
+            }
+
+            setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
+        }
+
+        // ns Player intent function
+        function playInNsPlayer(index) {
+            const channel = channels[index];
+            let urlToPlay = channel.url;
+
+            // Convert Pixeldrain URLs
+            if (urlToPlay.match(/pixeldrain\.(com|dev)\/u\/([a-zA-Z0-9_-]+)/)) {
+                const fileId = urlToPlay.match(/pixeldrain\.(?:com|dev)\/u\/([a-zA-Z0-9_-]+)/)[1];
+                urlToPlay = `https://pixeldrain.com/api/file/${fileId}`;
+            }
+
+            // Create intent URL for ns Player
+            // Format: intent://URL#Intent;scheme=https;package=com.genuine.leone;end
+            const intentUrl = `intent://${urlToPlay.replace(/^https?:\/\//, '')}#Intent;scheme=${urlToPlay.startsWith('https') ? 'https' : 'http'};package=com.genuine.leone;end`;
+
+            // Try to open the intent
+            window.location.href = intentUrl;
+
+            // Fallback: if intent doesn't work, show message
+            setTimeout(() => {
+                showAlert('Info', `If ns Player didn't open, make sure it's installed on your device. You can download it from the Play Store.\n\nStream URL: ${urlToPlay}`);
+            }, 2000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFromLocalStorage();
+            renderChannels();
+            setupNavigation();
+            setupSeriesModeToggle();
+            setupHtmlVideoPlayer();
+            updateChannelCount();
+            generateM3U();
+            checkAndShowDuplicateWarning();
+        });
+
+        function setupNavigation() {
+            document.querySelectorAll('.nav-link[data-view]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const view = this.dataset.view;
+
+                    document.querySelectorAll('.view-section').forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    document.querySelectorAll('.nav-link').forEach(navLink => {
+                        navLink.classList.remove('active');
+                    });
+
+                    document.getElementById(view + 'View').classList.add('active');
+                    this.classList.add('active');
+
+                    if (view === 'saved') {
+                        renderSavedPlaylists();
+                    } else if (view === 'bulk') {
+                        generateBulkM3U();
+                    }
+                });
+            });
+        }
+
+        function openBulkChannelList() {
+            document.querySelector('.nav-link[data-view="home"]').click();
+            document.getElementById('channelList').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function setupSeriesModeToggle() {
+            document.getElementById('seriesModeToggle').addEventListener('change', function() {
+                if (this.checked) {
+                    document.getElementById('singleMode').style.display = 'none';
+                    document.getElementById('seriesMode').style.display = 'block';
+                } else {
+                    document.getElementById('singleMode').style.display = 'block';
+                    document.getElementById('seriesMode').style.display = 'none';
+                }
+            });
+        }
+
+        function setupHtmlVideoPlayer() {
+            htmlVideoPlayer = document.getElementById('htmlVideoPlayer');
+            document.getElementById('videoModal').addEventListener('hidden.bs.modal', function() {
+                htmlVideoPlayer.pause();
+                htmlVideoPlayer.removeAttribute('src'); 
+                htmlVideoPlayer.load();
+            });
+        }
+
+        async function addChannel() {
+            const name = document.getElementById('channelName').value.trim();
+            const url = document.getElementById('channelUrl').value.trim();
+            const logo = document.getElementById('channelLogo').value.trim();
+            
+            const contentType = detectContentTypeFromName(name); 
+
+            const globalLogo = document.getElementById('globalLogo').value.trim();
+            const globalGroup = document.getElementById('globalGroup').value.trim();
+
+            const isPixeldrain = url.match(/pixeldrain\.(com|dev)\/(l|u)\/([a-zA-Z0-9_-]+)/);
+
+            if (isPixeldrain) {
+                document.getElementById('pixeldrainUrl').value = url;
+                document.getElementById('channelName').value = '';
+                document.getElementById('channelUrl').value = '';
+                document.getElementById('channelLogo').value = '';
+                await importFromPixeldrain();
+                return;
+            }
+
+            if (!name || !url) {
+                showAlert('Error', 'Please provide both channel name and URL');
+                return;
+            }
+
+            const chObj = {
+                name: name,
+                url: url,
+                logo: logo || globalLogo || '',
+                group: globalGroup || '',
+                contentType: contentType, 
+                duration: '-1',
+                vlcOpt: ''
+            };
+
+            channels.push(chObj);
+            const addedIndex = channels.length - 1;
+
+            document.getElementById('channelName').value = '';
+            document.getElementById('channelUrl').value = '';
+            document.getElementById('channelLogo').value = '';
+
+            saveToLocalStorage();
+            renderChannels();
+            updateChannelCount();
+            generateM3U();
+            checkAndShowDuplicateWarning();
+            showAlert('Success', `Channel "${name}" added successfully!`);
+
+            if ((!chObj.group || chObj.group.trim() === '') && (chObj.contentType === 'movie' || chObj.contentType === 'auto')) {
+                assignMovieAutoGroup(chObj.name, addedIndex);
+            }
+
+            if (!chObj.logo || chObj.logo.trim() === '') {
+                tmdbFetchAndAssign(chObj.name, addedIndex);
+            }
+        }
+
+        async function addSeries() {
+            const seriesName = document.getElementById('seriesName').value.trim();
+            const baseUrl = document.getElementById('seriesUrl').value.trim();
+            const count = parseInt(document.getElementById('episodeCount').value);
+            const startEpisode = parseInt(document.getElementById('seriesStartEpisode').value) || 1;
+            const logo = document.getElementById('seriesLogo').value.trim();
+            const seriesGroup = document.getElementById('seriesGroup').value.trim();
+            const globalGroup = document.getElementById('globalGroup').value.trim();
+            const globalLogo = document.getElementById('globalLogo').value.trim();
+
+            if (!seriesName || !baseUrl || count < 1) {
+                showAlert('Error', 'Please provide series name, base URL, and valid episode count');
+                return;
+            }
+
+            const pattern = analyzeUrlPattern(baseUrl);
+            if (!pattern) {
+                showAlert('Error', 'Could not detect episode pattern in URL. Supported: EP.1, E01, %2001, etc.');
+                return;
+            }
+
+            const startingIndex = channels.length;
+            for (let i = 0; i < count; i++) {
+                const episodeNum = startEpisode + i;
+                const episodeUrl = generateEpisodeUrl(baseUrl, pattern, episodeNum);
+                channels.push({
+                    name: `${seriesName}${episodeNum}`,
+                    url: episodeUrl,
+                    logo: logo || globalLogo || '',
+                    group: seriesGroup || globalGroup || '',
+                    duration: '-1',
+                    vlcOpt: '',
+                    contentType: 'tv' 
+                });
+            }
+
+            document.getElementById('seriesName').value = '';
+            document.getElementById('seriesUrl').value = '';
+            document.getElementById('episodeCount').value = '10';
+            document.getElementById('seriesLogo').value = '';
+            document.getElementById('seriesStartEpisode').value = '1';
+            document.getElementById('seriesGroup').value = '';
+
+            saveToLocalStorage();
+            renderChannels();
+            updateChannelCount();
+            generateM3U();
+            checkAndShowDuplicateWarning();
+            showAlert('Success', `${count} episodes added successfully!`);
+
+            if (!(logo || globalLogo)) {
+                (async () => {
+                    const statusEl = document.getElementById('posterStatus');
+                    statusEl.style.display = 'block';
+                    statusEl.textContent = 'Fetching series poster...';
+                    
+                    try {
+                        const preferGroup = seriesGroup || null;
+                        let seriesImg = null;
+                        
+                        if (preferGroup) {
+                            statusEl.textContent = `Searching poster for group: ${preferGroup}`;
+                            seriesImg = await fetchSeriesPosterOnly(preferGroup);
+                        }
+                        if (!seriesImg) {
+                            statusEl.textContent = `Searching poster for series: ${seriesName}`;
+                            seriesImg = await fetchSeriesPosterOnly(seriesName);
+                        }
+                        
+                        if (seriesImg) {
+                            statusEl.textContent = 'Poster found! Assigning to all episodes...';
+                            for (let i = startingIndex; i < startingIndex + count; i++) {
+                                if (channels[i] && (!channels[i].logo || channels[i].logo.trim() === '')) {
+                                    channels[i].logo = seriesImg;
+                                }
+                            }
+                            saveToLocalStorage();
+                            renderChannels();
+                            generateM3U();
+                            statusEl.textContent = 'Series poster assigned successfully.';
+                        } else {
+                            statusEl.textContent = 'Could not find a series poster on TMDB.';
+                        }
+                    } catch (e) {
+                        statusEl.textContent = 'Error fetching series poster.';
+                    } finally {
+                        setTimeout(() => { statusEl.style.display = 'none'; }, 3500);
+                    }
+                })();
+            }
+        }
+
+        function analyzeUrlPattern(url) {
+            const patterns = [
+                { regex: /EP\.(\d+)/i, type: 'EP', padding: 0 },
+                { regex: /E(\d{2,})/i, type: 'E', padding: 0 },
+                { regex: /%20(\d{2,})/i, type: '%20', padding: 0 },
+                { regex: /episode[_-]?(\d+)/i, type: 'episode', padding: 0 },
+                { regex: /ep[_-]?(\d+)/i, type: 'ep', padding: 0 },
+                { regex: /s(\d+)e(\d+)/i, type: 's01e', padding: 0 },
+                { regex: /\.(\d+)\./i, type: 'dot', padding: 0 }
+            ];
+
+            for (let pattern of patterns) {
+                const match = url.match(pattern.regex);
+                if (match) {
+                    pattern.padding = match[1].length;
+                    pattern.match = match[0];
+                    pattern.number = parseInt(match[1]);
+                    return pattern;
+                }
+            }
+            return null;
+        }
+
+        function generateEpisodeUrl(baseUrl, pattern, episodeNum) {
+            const paddedNum = String(episodeNum).padStart(pattern.padding || 1, '0');
+            let newPattern;
+
+            switch(pattern.type) {
+                case 'EP':
+                    newPattern = `EP.${paddedNum}`;
+                    break;
+                case 'E':
+                    newPattern = `E${paddedNum}`;
+                    break;
+                case '%20':
+                    newPattern = `%20${paddedNum}`;
+                    break;
+                case 'episode':
+                    newPattern = `episode${paddedNum}`;
+                    break;
+                case 'ep':
+                    newPattern = `ep${paddedNum}`;
+                    break;
+                case 's01e':
+                    const seasonMatch = baseUrl.match(/s(\d+)e/i);
+                    const season = seasonMatch ? seasonMatch[1] : '01';
+                    newPattern = `s${season}e${paddedNum}`;
+                    break;
+                case 'dot':
+                    newPattern = `.${paddedNum}.`;
+                    break;
+                default:
+                    newPattern = paddedNum;
+            }
+
+            return baseUrl.replace(pattern.match, newPattern);
+        }
+
+        function renderChannels() {
+            const container = document.getElementById('channelList');
+            const searchTerm = document.getElementById('searchChannel').value.toLowerCase();
+            const globalLogo = document.getElementById('globalLogo').value.trim();
+
+            // Update total count
+            document.getElementById('channelListTotalCount').textContent = channels.length;
+
+            if (channels.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                        <p>No channels added yet. Add your first channel!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const filteredChannels = channels.filter(ch =>
+                ch.name.toLowerCase().includes(searchTerm) ||
+                ch.url.toLowerCase().includes(searchTerm) ||
+                (ch.group && ch.group.toLowerCase().includes(searchTerm))
+            );
+
+            container.innerHTML = filteredChannels.map((channel, index) => {
+                const actualIndex = channels.indexOf(channel);
+
+                const displayLogo = channel.logo || globalLogo;
+
+                if ((!channel.logo || channel.logo.trim() === '') && (!globalLogo || globalLogo.trim() === '')) {
+                    setTimeout(() => {
+                        tmdbFetchAndAssign(channel.name, actualIndex);
+                    }, 50);
+                }
+
+                if ((!channel.group || channel.group.trim() === '') && channel.contentType === 'movie') {
+                    assignMovieAutoGroup(channel.name, actualIndex);
+                }
+
+                const badgeType = channel.contentType && channel.contentType !== 'auto' ? `<small class="text-muted"> | ${channel.contentType.toUpperCase()}</small>` : '';
+
+                return `
+                    <div class="channel-item">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                ${displayLogo ? `<img src="${displayLogo}" class="logo-preview" onerror="this.style.display='none'">` : '<i class="bi bi-tv" style="font-size: 2rem;"></i>'}
+                            </div>
+                            <div class="col">
+                                <h6 class="mb-1">${channel.name}${badgeType}</h6>
+                                <small class="text-muted d-block text-truncate" style="max-width: 400px;">${channel.url}</small>
+                                ${channel.group ? `<span class="badge badge-custom mt-1">${channel.group}</span>` : ''}
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-sm btn-info me-1" onclick="playChannel(${actualIndex})" title="Preview in Browser">
+                                    <i class="bi bi-play-fill"></i>
+                                </button>
+                                <button class="btn btn-sm btn-ns-player me-1" onclick="playInNsPlayer(${actualIndex})" title="Play in ns Player (Mobile)">
+                                    <i class="bi bi-phone"></i>
+                                </button>
+                                <button class="btn btn-sm btn-warning me-1" onclick="openEditChannelModal(${actualIndex})" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteChannel(${actualIndex})" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Check for duplicates after rendering
+            checkAndShowDuplicateWarning();
+        }
+
+        function filterChannels() {
+            renderChannels();
+        }
+
+        function updateChannelCount() {
+            document.getElementById('channelCount').textContent = `${channels.length} channels`;
+            document.getElementById('channelListTotalCount').textContent = channels.length;
+        }
+
+        function openEditChannelModal(index) {
+            const channel = channels[index];
+            document.getElementById('editChannelIndex').value = index;
+            document.getElementById('editChannelName').value = channel.name;
+            document.getElementById('editChannelUrl').value = channel.url;
+            document.getElementById('editChannelLogo').value = channel.logo;
+            document.getElementById('editChannelGroup').value = channel.group;
+
+            const modal = new bootstrap.Modal(document.getElementById('editChannelModal'));
+            modal.show();
+        }
+
+        function saveEditedChannel() {
+            const index = parseInt(document.getElementById('editChannelIndex').value);
+            const newName = document.getElementById('editChannelName').value.trim();
+            const newUrl = document.getElementById('editChannelUrl').value.trim();
+            const newLogo = document.getElementById('editChannelLogo').value.trim();
+            const newGroup = document.getElementById('editChannelGroup').value.trim();
+
+            if (!newName || !newUrl) {
+                showAlert('Error', 'Name and URL cannot be empty.');
+                return;
+            }
+
+            channels[index].name = newName;
+            channels[index].url = newUrl;
+            channels[index].logo = newLogo;
+            channels[index].group = newGroup;
+            
+            saveToLocalStorage();
+            renderChannels();
+            generateM3U();
+            checkAndShowDuplicateWarning();
+
+            bootstrap.Modal.getInstance(document.getElementById('editChannelModal')).hide();
+            showAlert('Success', `Channel "${newName}" updated!`);
+
+            if (!newLogo || newLogo.trim() === '') {
+                tmdbFetchAndAssign(newName, index);
+            }
+
+            if ((!channels[index].group || channels[index].group.trim() === '') && (channels[index].contentType === 'movie' || channels[index].contentType === 'auto')) {
+                channels[index].contentType = detectContentTypeFromName(newName); 
+                assignMovieAutoGroup(newName, index);
+            }
+        }
+
+        function deleteChannel(index) {
+            const channelName = channels[index].name;
+            if (confirm(`Delete "${channelName}"?`)) {
+                channels.splice(index, 1);
+                saveToLocalStorage();
+                renderChannels();
+                updateChannelCount();
+                generateM3U();
+                checkAndShowDuplicateWarning();
+                showAlert('Success', `Channel "${channelName}" deleted.`);
+            }
+        }
+
+        function playChannel(index) {
+            const channel = channels[index];
+            let urlToPlay = channel.url;
+
+            document.getElementById('videoModalTitle').textContent = `Playing: ${channel.name}`;
+
+            if (urlToPlay.match(/pixeldrain\.(com|dev)\/u\/([a-zA-Z0-9_-]+)/)) {
+                const fileId = urlToPlay.match(/pixeldrain\.(?:com|dev)\/u\/([a-zA-Z0-9_-]+)/)[1];
+                urlToPlay = `https://pixeldrain.com/api/file/${fileId}`;
+            }
+
+            if (window.Hls && Hls.isSupported() && urlToPlay.toLowerCase().endsWith('.m3u8')) {
+                const hls = new Hls();
+                hls.loadSource(urlToPlay);
+                hls.attachMedia(htmlVideoPlayer);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    htmlVideoPlayer.play();
+                });
+            } else {
+                htmlVideoPlayer.src = urlToPlay;
+                htmlVideoPlayer.play();
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('videoModal'));
+            modal.show();
+        }
+
+        function generateM3U(targetOutputId = 'm3uOutput') {
+            if (channels.length === 0) {
+                document.getElementById(targetOutputId).value = '';
+                return;
+            }
+
+            const globalLogo = document.getElementById('globalLogo').value.trim();
+            const globalGroup = document.getElementById('globalGroup').value.trim();
+
+            let m3u = '#EXTM3U\n';
+
+            channels.forEach(channel => {
+                const logo = channel.logo && channel.logo.trim() !== '' ? channel.logo.trim() : globalLogo;
+                const group = channel.group && channel.group.trim() !== '' ? channel.group.trim() : globalGroup;
+
+                m3u += `#EXTINF:${channel.duration || '-1'} tvg-logo="${logo || ''}" group-title="${group || ''}",${channel.name}\n`;
+
+                if (channel.vlcOpt) {
+                    m3u += `${channel.vlcOpt}\n`;
+                }
+
+                m3u += `${channel.url}\n`;
+            });
+
+            document.getElementById(targetOutputId).value = m3u;
+            if(document.activeElement && document.activeElement.textContent.includes('Generate M3U')) {
+                 showAlert('Success', 'M3U playlist generated successfully!');
+            }
+        }
+
+        function generateBulkM3U() {
+            generateM3U('m3uBulkOutput');
+            showAlert('Success', 'M3U playlist generated in Bulk Output!');
+        }
+
+        function copyBulkToClipboard() {
+            const output = document.getElementById('m3uBulkOutput').value;
+            if (!output) {
+                showAlert('Error', 'Generate M3U first!');
+                return;
+            }
+
+            navigator.clipboard.writeText(output).then(() => {
+                showAlert('Success', 'M3U copied to clipboard!');
+            }).catch(() => {
+                showAlert('Error', 'Failed to copy to clipboard');
+            });
+        }
+
+        function downloadBulkM3U() {
+            const output = document.getElementById('m3uBulkOutput').value;
+            if (!output) {
+                showAlert('Error', 'Generate M3U first!');
+                return;
+            }
+
+            const blob = new Blob([output], { type: 'audio/x-mpegurl' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'bulk_playlist.m3u';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showAlert('Success', 'M3U file downloaded!');
+        }
+
+        function generateBulkQR() {
+            const output = document.getElementById('m3uBulkOutput').value;
+            if (!output) {
+                showAlert('Error', 'Generate M3U first!');
+                return;
+            }
+
+            const blob = new Blob([output], { type: 'audio/x-mpegurl' });
+            const url = URL.createObjectURL(blob);
+
+            const container = document.getElementById('qrCodeContainer');
+            container.innerHTML = '<div class="qr-code-container" id="bulk-qrcode"></div>';
+
+            new QRCode(document.getElementById('bulk-qrcode'), {
+                text: url,
+                width: 256,
+                height: 256
+            });
+
+            const modal = new bootstrap.Modal(document.getElementById('qrModal'));
+            modal.show();
+        }
+
+        function copyToClipboard() {
+            const output = document.getElementById('m3uOutput').value;
+            if (!output) {
+                showAlert('Error', 'Generate M3U first!');
+                return;
+            }
+
+            navigator.clipboard.writeText(output).then(() => {
+                showAlert('Success', 'M3U copied to clipboard!');
+            }).catch(() => {
+                showAlert('Error', 'Failed to copy to clipboard');
+            });
+        }
+
+        function downloadM3U() {
+            const output = document.getElementById('m3uOutput').value;
+            if (!output) {
+                showAlert('Error', 'Generate M3U first!');
+                return;
+            }
+
+            const blob = new Blob([output], { type: 'audio/x-mpegurl' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'playlist.m3u';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showAlert('Success', 'M3U file downloaded!');
+        }
+
+        function generateQR() {
+            const output = document.getElementById('m3uOutput').value;
+            if (!output) {
+                showAlert('Error', 'Generate M3U first!');
+                return;
+            }
+
+            const blob = new Blob([output], { type: 'audio/x-mpegurl' });
+            const url = URL.createObjectURL(blob);
+
+            const container = document.getElementById('qrCodeContainer');
+            container.innerHTML = '<div class="qr-code-container" id="qrcode"></div>';
+
+            new QRCode(document.getElementById('qrcode'), {
+                text: url,
+                width: 256,
+                height: 256
+            });
+
+            const modal = new bootstrap.Modal(document.getElementById('qrModal'));
+            modal.show();
+        }
+
+        function clearCurrent() {
+            if (confirm('Clear all channels? This cannot be undone!')) {
+                channels = [];
+                document.getElementById('globalLogo').value = '';
+                document.getElementById('globalGroup').value = '';
+
+                saveToLocalStorage();
+                renderChannels();
+                updateChannelCount();
+                document.getElementById('m3uOutput').value = '';
+                document.getElementById('m3uBulkOutput').value = '';
+                checkAndShowDuplicateWarning();
+                showAlert('Success', 'Current playlist cleared!');
+            }
+        }
+
+        async function importFromPixeldrain() {
+            const url = document.getElementById('pixeldrainUrl').value.trim();
+
+            if (!url) {
+                showAlert('Error', 'Please enter a Pixeldrain URL');
+                return;
+            }
+
+            const listMatch = url.match(/pixeldrain\.(?:com|dev)\/l\/([a-zA-Z0-9_-]+)/);
+            const fileMatch = url.match(/pixeldrain\.(?:com|dev)\/u\/([a-zA-Z0-9_-]+)/);
+
+            if (listMatch) {
+                await importPixeldrainList(listMatch[1]);
+            } else if (fileMatch) {
+                await importPixeldrainFile(fileMatch[1]);
+            } else {
+                showAlert('Error', 'Invalid Pixeldrain URL. Use format: https://pixeldrain.com/l/xxx or /u/xxx (also supports pixeldrain.dev)');
+            }
+        }
+
+        function setPixeldrainLoading(isLoading, text = '') {
+            const btn = document.getElementById('pixeldrainImportBtn');
+            const status = document.getElementById('pixeldrainStatus');
+            if (isLoading) {
+                btn.disabled = true;
+                btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ${text || 'Importing...'} `;
+                status.style.display = 'block';
+                status.textContent = text || 'Starting import...';
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="bi bi-cloud-download"></i> Auto-Import from Pixeldrain`;
+                if (text) {
+                    status.style.display = 'block';
+                    status.textContent = text;
+                    setTimeout(() => { status.style.display = 'none'; }, 3500);
+                } else {
+                    status.style.display = 'none';
+                }
+            }
+        }
+
+        async function importPixeldrainList(listId) {
+            let videoCount = 0;
+            try {
+                setPixeldrainLoading(true, 'Fetching list metadata...');
+                const response = await fetch(`https://pixeldrain.com/api/list/${listId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch list from Pixeldrain API');
+                }
+                const data = await response.json();
+
+                if (!data.success || !data.files || data.files.length === 0) {
+                    setPixeldrainLoading(false);
+                    showAlert('Error', 'No files found in this Pixeldrain list');
+                    return;
+                }
+
+                const importGroup = document.getElementById('pixeldrainImportGroup').value.trim();
+                const globalGroupTitle = importGroup || data.title || 'Pixeldrain List';
+                
+                const infoPromises = data.files.map(f => {
+                    if (f && f.id) {
+                        setPixeldrainLoading(true, `Queuing info for ${data.files.length} files...`);
+                        return fetchPixeldrainFileInfo(f.id).then(info => ({ id: f.id, info })).catch(err => ({ id: f.id, info: null }));
+                    }
+                    return Promise.resolve({ id: null, info: null });
+                });
+
+                setPixeldrainLoading(true, `Fetching file info for all files...`);
+                const settled = await Promise.allSettled(infoPromises);
+                setPixeldrainLoading(true, 'Processing and filtering video files...');
+
+                for (const p of settled) {
+                    if (p.status === 'fulfilled' && p.value && p.value.info) {
+                        const { id, info } = p.value;
+
+                        if (isVideoFile(info.mime_type) || (info.name && info.name.toLowerCase().endsWith('.m3u8'))) {
+                            channels.push({
+                                name: info.name,
+                                url: `https://pixeldrain.com/api/file/${id}`,
+                                logo: `https://pixeldrain.com/api/file/${id}/thumbnail`,
+                                group: globalGroupTitle,
+                                duration: '-1',
+                                vlcOpt: '',
+                                contentType: 'auto'
+                            });
+                            videoCount++;
+                        }
+                    }
+                }
+
+                saveToLocalStorage();
+                renderChannels();
+                updateChannelCount();
+                generateM3U();
+                checkAndShowDuplicateWarning();
+
+                document.getElementById('pixeldrainUrl').value = '';
+                document.getElementById('pixeldrainImportGroup').value = '';
+
+                setPixeldrainLoading(false, `Imported ${videoCount} video file(s) from Pixeldrain list "${globalGroupTitle}"!`);
+                showAlert('Success', `Imported ${videoCount} video file(s) from Pixeldrain list "${globalGroupTitle}"!`);
+            } catch (error) {
+                setPixeldrainLoading(false);
+                showAlert('Error', 'Failed to import from Pixeldrain: ' + error.message);
+            }
+        }
+
+        async function importPixeldrainFile(fileId) {
+            try {
+                setPixeldrainLoading(true, 'Fetching file info...');
+                const fileInfo = await fetchPixeldrainFileInfo(fileId);
+
+                if (!fileInfo) {
+                    setPixeldrainLoading(false);
+                    showAlert('Error', 'Failed to fetch file information from Pixeldrain');
+                    return;
+                }
+
+                if (!isVideoFile(fileInfo.mime_type) && !(fileInfo.name && fileInfo.name.toLowerCase().endsWith('.m3u8'))) {
+                    setPixeldrainLoading(false);
+                    showAlert('Error', `File "${fileInfo.name}" skipped: it is not a recognized video file.`);
+                    return;
+                }
+
+                const importGroup = document.getElementById('pixeldrainImportGroup').value.trim();
+                const fileName = fileInfo.name;
+                const fileGroupFallback = (fileName && fileName.includes('.')) ? fileName.substring(0, fileName.lastIndexOf('.')) : 'Pixeldrain File';
+                const globalGroupTitle = importGroup || fileGroupFallback;
+
+                const chIndex = channels.push({
+                    name: fileName,
+                    url: `https://pixeldrain.com/api/file/${fileId}`,
+                    logo: `https://pixeldrain.com/api/file/${fileId}/thumbnail`,
+                    group: globalGroupTitle,
+                    duration: '-1',
+                    vlcOpt: '',
+                    contentType: 'auto'
+                }) - 1;
+
+                saveToLocalStorage();
+                renderChannels();
+                updateChannelCount();
+                generateM3U();
+                checkAndShowDuplicateWarning();
+
+                document.getElementById('pixeldrainUrl').value = '';
+                document.getElementById('pixeldrainImportGroup').value = '';
+
+                setPixeldrainLoading(false, `Imported video file "${fileName}" from Pixeldrain!`);
+                showAlert('Success', `Imported video file "${fileName}" from Pixeldrain!`);
+
+                if (!channels[chIndex].logo) {
+                    tmdbFetchAndAssign(fileName, chIndex);
+                }
+            } catch (error) {
+                setPixeldrainLoading(false);
+                showAlert('Error', 'Failed to import from Pixeldrain: ' + error.message);
+            }
+        }
+
+        async function fetchPixeldrainFileInfo(fileId) {
+            try {
+                const response = await fetch(`https://pixeldrain.com/api/file/${fileId}/info`);
+                if (!response.ok) {
+                    return null;
+                }
+                const data = await response.json();
+                return data.success ? data : null;
+            } catch (error) {
+                console.error('Error fetching file info:', error);
+                return null;
+            }
+        }
+
+        function isVideoFile(mimeType) {
+            if (!mimeType) return false;
+            const lowerMime = mimeType.toLowerCase();
+            return lowerMime.startsWith('video/') ||
+                   lowerMime.includes('mpegurl') ||
+                   lowerMime.includes('mp4') ||
+                   lowerMime.includes('x-matroska');
+        }
+
+        function importM3U() {
+            const fileInput = document.getElementById('m3uFileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showAlert('Error', 'Please select an M3U or TXT file');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                parseM3U(content);
+                checkAndShowDuplicateWarning();
+            };
+            reader.readAsText(file);
+        }
+
+        function importM3UFromPaste() {
+            const content = document.getElementById('m3uPasteInput').value;
+
+            if (!content.trim()) {
+                showAlert('Error', 'Please paste M3U content');
+                return;
+            }
+
+            const importedCount = parseM3U(content);
+            document.getElementById('m3uPasteInput').value = '';
+            checkAndShowDuplicateWarning();
+            showAlert('Success', `Imported ${importedCount} channels from pasted M3U content!`);
+        }
+
+        function parseM3U(content) {
+            const lines = content.split('\n');
+            let imported = 0;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+
+                if (line.startsWith('#EXTINF')) {
+                    const extinfMatch = line.match(/^#EXTINF:([^,]+),(.*)$/);
+                    const duration = extinfMatch ? extinfMatch[1] : '-1';
+                    let name = extinfMatch ? extinfMatch[2].trim() : 'Unnamed Channel';
+                    const logoMatch = line.match(/tvg-logo="([^"]*)"/);
+                    const groupMatch = line.match(/group-title="([^"]*)"/);
+                    const logo = logoMatch ? logoMatch[1] : '';
+                    const group = groupMatch ? groupMatch[1] : '';
+
+                    let url = '';
+                    let vlcOpt = '';
+                    let urlFound = false;
+                    let j = i + 1;
+
+                    while (j < lines.length) {
+                        const nextLine = lines[j].trim();
+
+                        if (nextLine.startsWith('#EXTVLCOPT:')) {
+                            vlcOpt = nextLine;
+                            j++;
+                            continue;
+                        }
+
+                        if (nextLine.startsWith('#') && !nextLine.startsWith('#EXTM3U') && !nextLine.startsWith('#EXTINF')) {
+                            j++;
+                            continue;
+                        }
+
+                        if (nextLine && !nextLine.startsWith('#')) {
+                            url = nextLine;
+                            urlFound = true;
+                            i = j;
+                            break;
+                        }
+
+                        if (nextLine.startsWith('#EXTINF') || nextLine.startsWith('#EXTM3U')) {
+                             break;
+                        }
+
+                        j++;
+                    }
+
+                    if (urlFound && url) {
+                        const idx = channels.push({ name, url, logo, group, duration, vlcOpt, contentType: 'auto' }) - 1;
+                        imported++;
+
+                        if (!logo || logo.trim() === '') {
+                            assignMovieAutoGroup(name, idx);
+                            tmdbFetchAndAssign(name, idx);
+                        }
+                    } else {
+                         i = j - 1;
+                    }
+                }
+            }
+
+            saveToLocalStorage();
+            renderChannels();
+            updateChannelCount();
+            generateM3U();
+
+            return imported;
+        }
+
+        function importCSV() {
+            const fileInput = document.getElementById('csvFileInput');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showAlert('Error', 'Please select a CSV file');
+                return;
+            }
+
+            Papa.parse(file, {
+                header: true,
+                complete: function(results) {
+                    csvData = results;
+                    showCsvMappingModal(results.meta.fields);
+                },
+                error: function(error) {
+                    showAlert('Error', 'Failed to parse CSV: ' + error.message);
+                }
+            });
+        }
+
+        function showCsvMappingModal(columns) {
+            const nameCol = document.getElementById('csvNameCol');
+            const urlCol = document.getElementById('csvUrlCol');
+            const logoCol = document.getElementById('csvLogoCol');
+            const groupCol = document.getElementById('csvGroupCol');
+
+            const options = '<option value="">-- None --</option>' +
+                columns.map(col => `<option value="${col}">${col}</option>`).join('');
+
+            nameCol.innerHTML = options;
+            urlCol.innerHTML = options;
+            logoCol.innerHTML = options;
+            groupCol.innerHTML = options;
+
+            const modal = new bootstrap.Modal(document.getElementById('csvMapModal'));
+            modal.show();
+        }
+
+        function processCsvImport() {
+            const nameCol = document.getElementById('csvNameCol').value;
+            const urlCol = document.getElementById('csvUrlCol').value;
+            const logoCol = document.getElementById('csvLogoCol').value;
+            const groupCol = document.getElementById('csvGroupCol').value;
+
+            if (!nameCol || !urlCol) {
+                showAlert('Error', 'Please select at least Name and URL columns');
+                return;
+            }
+
+            let imported = 0;
+            csvData.data.forEach(row => {
+                if (row[nameCol] && row[urlCol]) {
+                    const idx = channels.push({
+                        name: row[nameCol],
+                        url: row[urlCol],
+                        logo: logoCol ? (row[logoCol] || '') : '',
+                        group: groupCol ? (row[groupCol] || '') : '',
+                        duration: '-1',
+                        vlcOpt: '',
+                        contentType: 'auto'
+                    }) - 1;
+                    imported++;
+
+                    if ((!logoCol || !row[logoCol] || row[logoCol].trim() === '')) {
+                        tmdbFetchAndAssign(row[nameCol], idx);
+                        assignMovieAutoGroup(row[nameCol], idx);
+                    }
+                }
+            });
+
+            saveToLocalStorage();
+            renderChannels();
+            updateChannelCount();
+            generateM3U();
+            checkAndShowDuplicateWarning();
+
+            bootstrap.Modal.getInstance(document.getElementById('csvMapModal')).hide();
+            showAlert('Success', `Imported ${imported} channels from CSV!`);
+            document.getElementById('csvFileInput').value = '';
+        }
+
+        function applyBulkNames() {
+            const names = document.getElementById('bulkNames').value.split('\n').filter(n => n.trim());
+
+            if (names.length === 0) {
+                showAlert('Error', 'Please enter at least one name');
+                return;
+            }
+
+            const count = Math.min(names.length, channels.length);
+            for (let i = 0; i < count; i++) {
+                channels[i].name = names[i].trim();
+            }
+
+            saveToLocalStorage();
+            renderChannels();
+            generateM3U();
+            checkAndShowDuplicateWarning();
+            showAlert('Success', `Applied names to ${count} channels!`);
+        }
+
+        function applyBulkLogoGroup() {
+            const logo = document.getElementById('bulkLogo').value.trim();
+            const group = document.getElementById('bulkGroup').value.trim();
+
+            if (!logo && !group) {
+                showAlert('Error', 'Please provide at least a logo or group name');
+                return;
+            }
+
+            channels.forEach(channel => {
+                if (logo) channel.logo = logo;
+                if (group) channel.group = group;
+            });
+
+            saveToLocalStorage();
+            renderChannels();
+            generateM3U();
+            showAlert('Success', `Applied settings to all ${channels.length} channels!`);
+        }
+
+        function updateEpisodeRange() {
+            const start = parseInt(document.getElementById('rangeStart').value);
+            const end = parseInt(document.getElementById('rangeEnd').value);
+            const prefix = document.getElementById('rangePrefix').value.trim();
+
+            if (!prefix) {
+                showAlert('Error', 'Please provide an episode prefix');
+                return;
+            }
+
+            if (start < 1 || end < start || end > channels.length) {
+                showAlert('Error', `Invalid range. Must be between 1 and ${channels.length}`);
+                return;
+            }
+
+            const startUrl = channels[start - 1].url;
+            const pattern = analyzeUrlPattern(startUrl);
+
+            if (!pattern) {
+                showAlert('Error', 'Could not detect episode pattern in start URL');
+                return;
+            }
+
+            let episodeNum = pattern.number;
+            for (let i = start - 1; i < end; i++) {
+                channels[i].url = generateEpisodeUrl(startUrl, pattern, episodeNum);
+                channels[i].name = `${prefix}${episodeNum}`;
+                episodeNum++;
+            }
+
+            saveToLocalStorage();
+            renderChannels();
+            generateM3U();
+            checkAndShowDuplicateWarning();
+            showAlert('Success', `Updated ${end - start + 1} episodes!`);
+        }
+
+        function savePlaylist() {
+            if (channels.length === 0) {
+                showAlert('Error', 'No channels to save');
+                return;
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('savePlaylistModal'));
+            modal.show();
+        }
+
+        function confirmSavePlaylist() {
+            const name = document.getElementById('playlistName').value.trim();
+            if (!name) {
+                showAlert('Error', 'Please provide a playlist name');
+                return;
+            }
+
+            const playlists = JSON.parse(localStorage.getItem('savedPlaylists') || '[]');
+            playlists.push({
+                name: name,
+                channels: [...channels],
+                date: new Date().toISOString()
+            });
+            localStorage.setItem('savedPlaylists', JSON.stringify(playlists));
+
+            bootstrap.Modal.getInstance(document.getElementById('savePlaylistModal')).hide();
+            document.getElementById('playlistName').value = '';
+            showAlert('Success', `Playlist "${name}" saved successfully!`);
+        }
+
+        function renderSavedPlaylists() {
+            const playlists = JSON.parse(localStorage.getItem('savedPlaylists') || '[]');
+            const container = document.getElementById('savedPlaylistsList');
+
+            if (playlists.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-folder-x" style="font-size: 3rem;"></i>
+                        <p>No saved playlists yet. Save a playlist from the Home view!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = playlists.map((playlist, index) => `
+                <div class="channel-item">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <i class="bi bi-collection-play" style="font-size: 2rem;"></i>
+                        </div>
+                        <div class="col">
+                            <h5 class="mb-1">${playlist.name}</h5>
+                            <small class="text-muted">${playlist.channels.length} channels | Saved: ${new Date(playlist.date).toLocaleString()}</small>
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn btn-sm btn-success me-1" onclick="loadPlaylist(${index})">
+                                <i class="bi bi-box-arrow-in-down"></i> Load
+                            </button>
+                            <button class="btn btn-sm btn-info me-1" onclick="exportPlaylist(${index})">
+                                <i class="bi bi-download"></i> Export
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteSavedPlaylist(${index})">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadPlaylist(index) {
+            const playlists = JSON.parse(localStorage.getItem('savedPlaylists') || '[]');
+            const playlistName = playlists[index].name;
+
+            if (channels.length > 0 && !confirm(`Loading "${playlistName}" will replace your current playlist. Continue?`)) {
+                return;
+            }
+
+            channels = [...playlists[index].channels];
+            saveToLocalStorage();
+            renderChannels();
+            updateChannelCount();
+            generateM3U();
+            checkAndShowDuplicateWarning();
+
+            document.querySelector('.nav-link[data-view="home"]').click();
+            showAlert('Success', `Loaded playlist "${playlistName}"!`);
+        }
+
+        function exportPlaylist(index) {
+            const playlists = JSON.parse(localStorage.getItem('savedPlaylists') || '[]');
+            const playlist = playlists[index];
+
+            let m3u = '#EXTM3U\n';
+            playlist.channels.forEach(channel => {
+                m3u += `#EXTINF:${channel.duration || '-1'} tvg-logo="${channel.logo}" group-title="${channel.group}",${channel.name}\n`;
+                if (channel.vlcOpt) {
+                    m3u += `${channel.vlcOpt}\n`;
+                }
+                m3u += `${channel.url}\n`;
+            });
+
+            const blob = new Blob([m3u], { type: 'audio/x-mpegurl' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${playlist.name}.m3u`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showAlert('Success', `Exported "${playlist.name}.m3u"!`);
+        }
+
+        function deleteSavedPlaylist(index) {
+            const playlists = JSON.parse(localStorage.getItem('savedPlaylists') || '[]');
+            const playlistName = playlists[index].name;
+
+            if (confirm(`Delete playlist "${playlistName}"?`)) {
+                playlists.splice(index, 1);
+                localStorage.setItem('savedPlaylists', JSON.stringify(playlists));
+                renderSavedPlaylists();
+                showAlert('Success', `Saved playlist "${playlistName}" deleted.`);
+            }
+        }
+
+        function saveToLocalStorage() {
+            const sessionData = {
+                channels: channels,
+                globalLogo: document.getElementById('globalLogo').value.trim(),
+                globalGroup: document.getElementById('globalGroup').value.trim(),
+                notificationSetting: document.getElementById('notificationSetting') ? document.getElementById('notificationSetting').value : 'all'
+            };
+            localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionData));
+        }
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem(SESSION_STORAGE_KEY);
+            if (saved) {
+                try {
+                    const sessionData = JSON.parse(saved);
+                    if (sessionData.channels) {
+                        channels = sessionData.channels.map(ch => ({
+                            ...ch,
+                            duration: ch.duration || '-1',
+                            vlcOpt: ch.vlcOpt || '',
+                            contentType: ch.contentType || 'auto'
+                        }));
+                    }
+                    if (sessionData.globalLogo !== undefined) {
+                        document.getElementById('globalLogo').value = sessionData.globalLogo;
+                    }
+                    if (sessionData.globalGroup !== undefined) {
+                        document.getElementById('globalGroup').value = sessionData.globalGroup;
+                    }
+                    if (sessionData.notificationSetting && document.getElementById('notificationSetting')) {
+                        document.getElementById('notificationSetting').value = sessionData.notificationSetting;
+                    }
+                } catch (e) {
+                    console.error("Could not parse saved session data:", e);
+                    localStorage.removeItem(SESSION_STORAGE_KEY);
+                }
+            }
+        }
+
+        function showAlert(title, message) {
+            const setting = document.getElementById('notificationSetting') ? document.getElementById('notificationSetting').value : 'all';
+            if (setting === 'none') return;
+            if (setting === 'errors') {
+                if (!(title && (title.toLowerCase().includes('error') || title.toLowerCase().includes('warning')))) {
+                    return;
+                }
+            }
+
+            document.getElementById('alertModalTitle').textContent = title;
+            document.getElementById('alertModalBody').textContent = message;
+            const modal = new bootstrap.Modal(document.getElementById('alertModal'));
+            modal.show();
+        }
+    </script>
+</body>
+</html>
