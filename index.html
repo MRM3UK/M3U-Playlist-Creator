@@ -1,0 +1,2386 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M3U Playlist Generator Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --ultra-black: #0a0a0a;
+            --dark-gray: #1a1a1a;
+            --medium-gray: #2a2a2a;
+            --light-gray: #3a3a3a;
+            --accent-blue: #0d6efd;
+            --accent-info: #0dcaf0;
+            --accent-success: #198754;
+            --accent-danger: #dc3545;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+        }
+        body { background-color: var(--ultra-black); color: var(--text-primary); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar { background-color: var(--dark-gray) !important; border-bottom: 1px solid var(--light-gray); padding-top: 2px; padding-bottom: 2px; min-height: auto; }
+        .navbar .navbar-brand { font-size: .85rem; padding: 4px 0; }
+        .navbar .navbar-text { font-size: .72rem; }
+        .nav-link { color: var(--text-secondary) !important; transition: all 0.3s; font-size: .8rem; padding: 5px 10px !important; }
+        .nav-link:hover, .nav-link.active { color: var(--accent-blue) !important; background-color: var(--medium-gray); }
+        .card { background-color: var(--dark-gray); border: 1px solid var(--light-gray); margin-bottom: .75rem; border-radius: 10px; overflow: hidden; }
+        .card-header { background-color: var(--medium-gray); border-bottom: 1px solid var(--light-gray); font-weight: 600; font-size: .82rem; padding: 8px 14px; }
+        .card-body { padding: 12px 14px; }
+        .form-label { font-size: .78rem; margin-bottom: 3px; color: var(--text-secondary); }
+        .form-control-sm, .form-select-sm { font-size: .8rem; }
+        .form-control, .form-select { background-color: var(--medium-gray); border: 1px solid var(--light-gray); color: var(--text-primary); }
+        .form-control:focus, .form-select:focus { background-color: var(--light-gray); border-color: var(--accent-blue); color: var(--text-primary); box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25); }
+        .btn-primary { background-color: var(--accent-blue); border-color: var(--accent-blue); }
+        .btn-info { --bs-btn-color:#000; --bs-btn-bg:var(--accent-info); --bs-btn-border-color:var(--accent-info); --bs-btn-hover-color:#000; --bs-btn-hover-bg:#3edcf4; --bs-btn-hover-border-color:#3edcf4; }
+        .btn-success { background-color: var(--accent-success); border-color: var(--accent-success); }
+        .btn-danger { background-color: var(--accent-danger); border-color: var(--accent-danger); }
+        .btn-purple { background-color: #6f42c1; border-color: #6f42c1; color: white; }
+        .btn-purple:hover { background-color: #5a32a3; border-color: #5a32a3; color: white; }
+
+        /* Intent / Leone Player button */
+        .btn-intent {
+            background: linear-gradient(135deg, #e8530e 0%, #f57c00 100%);
+            border: none; color: #fff;
+            position: relative; overflow: hidden;
+        }
+        .btn-intent:hover, .btn-intent:focus { background: linear-gradient(135deg, #d14800 0%, #e06800 100%); color: #fff; box-shadow: 0 0 10px rgba(245,124,0,.4); }
+        .btn-intent::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(120deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.18) 50%, rgba(255,255,255,0) 70%);
+            transform: translateX(-100%);
+            transition: transform .45s ease;
+        }
+        .btn-intent:hover::after { transform: translateX(100%); }
+        .ch-actions .btn-intent i { filter: drop-shadow(0 1px 1px rgba(0,0,0,.3)); }
+        .modal-content { background-color: var(--dark-gray); border: 1px solid var(--light-gray); border-radius: 12px; }
+        .modal-header { border-color: var(--light-gray); padding: 10px 16px; }
+        .modal-header .modal-title { font-size: .9rem; }
+        .modal-footer { border-color: var(--light-gray); padding: 8px 16px; }
+        .modal-body { padding: 14px 16px; font-size: .85rem; }
+
+        /* ── Edit Logo Search ── */
+        .logo-search-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 6px; padding: 4px 0;
+        }
+        .logo-search-item {
+            position: relative; cursor: pointer; border-radius: 6px;
+            border: 2px solid transparent; overflow: hidden;
+            background: var(--ultra-black); transition: all .2s;
+            aspect-ratio: 2/3;
+        }
+        .logo-search-item:hover { border-color: var(--accent-blue); transform: scale(1.03); }
+        .logo-search-item.selected { border-color: #6bcb77; box-shadow: 0 0 8px rgba(107,203,119,.4); }
+        .logo-search-item img { width: 100%; height: 100%; object-fit: cover; }
+        .logo-search-item .logo-item-label {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,.85));
+            padding: 12px 4px 3px; font-size: .6rem; color: #ccc;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            text-align: center;
+        }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+
+        /* ── Channel Items ── */
+        .channel-item {
+            background: linear-gradient(135deg, var(--medium-gray) 0%, rgba(42,42,42,.7) 100%);
+            border: 1px solid var(--light-gray);
+            border-radius: 12px;
+            padding: 0;
+            margin-bottom: 0.65rem;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            user-select: none;
+            overflow: hidden;
+        }
+        .channel-item:hover { background: linear-gradient(135deg, var(--light-gray) 0%, rgba(58,58,58,.8) 100%); border-color: var(--accent-blue); transform: translateY(-1px); box-shadow: 0 4px 15px rgba(13,110,253,.12); }
+        .channel-item.duplicate-warning { border-color: #ffc107 !important; background: linear-gradient(135deg, rgba(255,193,7,.08) 0%, rgba(255,193,7,.03) 100%); }
+        .channel-item.drag-over { border-color: var(--accent-blue) !important; background: rgba(13,110,253,.15) !important; }
+        .channel-item.dragging { opacity: 0.4; border-style: dashed; }
+
+        .ch-card-inner { display: flex; align-items: center; gap: 0; }
+        .ch-logo-wrap {
+            width: 62px; height: 62px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,.25);
+            border-right: 1px solid var(--light-gray);
+        }
+        .ch-logo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .ch-logo-wrap .ch-icon-placeholder { font-size: 1.6rem; color: var(--text-secondary); }
+        .ch-info { flex: 1; min-width: 0; padding: 10px 12px; }
+        .ch-name { font-weight: 600; font-size: .92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-primary); line-height: 1.3; }
+        .ch-meta { display: flex; align-items: center; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
+        .ch-group-badge { font-size: .68rem; padding: 2px 8px; border-radius: 99px; background: rgba(13,110,253,.15); color: #7aafff; border: 1px solid rgba(13,110,253,.25); font-weight: 500; }
+        .ch-type-badge { font-size: .65rem; padding: 1px 6px; border-radius: 99px; background: rgba(255,255,255,.06); color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; }
+        .ch-actions { display: flex; gap: 2px; padding: 0 8px; flex-shrink: 0; }
+        .ch-actions .btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; padding: 0; border-radius: 8px; font-size: .82rem; }
+
+        .logo-preview { max-width: 44px; max-height: 44px; object-fit: contain; border-radius: 4px; }
+
+        .badge-custom { background-color: var(--light-gray); color: var(--text-primary); }
+        .badge-duplicate { background-color: #ffc107; color: #000; }
+        #videoModal .modal-dialog { max-width: 800px; }
+        .series-mode-toggle { background-color: var(--medium-gray); border: 1px solid var(--light-gray); border-radius: 8px; padding: 8px 12px; margin-bottom: .75rem; }
+        .series-mode-toggle .form-check-label { font-size: .8rem; }
+        .duplicate-alert { background-color: rgba(255,193,7,.15); border: 1px solid rgba(255,193,7,.3); border-radius: 8px; padding: 8px 12px; margin: 8px 14px; font-size: .8rem; }
+
+        /* ── Bulk Edit ── */
+        .bulk-stat-pill {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 12px; border-radius: 99px;
+            background: var(--medium-gray); border: 1px solid var(--light-gray);
+            font-size: .73rem; color: var(--text-secondary); font-weight: 500;
+        }
+        .bulk-stat-pill i { color: var(--accent-info); font-size: .7rem; }
+        .bulk-stat-pill span { color: var(--text-primary); font-weight: 700; }
+        .bulk-import-tabs .nav-link {
+            font-size: .78rem; padding: 6px 10px;
+            color: var(--text-secondary); border-radius: 8px;
+        }
+        .bulk-import-tabs .nav-link.active { background: var(--accent-blue); color: #fff; }
+        #batchPreview { color: var(--accent-info); font-size: .78rem; word-break: break-all; }
+
+        /* ── Channel Action Bottom Sheet (tap) ── */
+        .channel-sheet-backdrop {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,.55);
+            z-index: 1060;
+            animation: fadeInBd .18s ease;
+        }
+        .channel-sheet-backdrop.show { display: block; }
+        @keyframes fadeInBd { from { opacity:0 } to { opacity:1 } }
+
+        .channel-sheet {
+            position: fixed;
+            bottom: -100%;
+            left: 0; right: 0;
+            background: var(--dark-gray);
+            border-top: 2px solid var(--accent-blue);
+            border-radius: 18px 18px 0 0;
+            z-index: 1061;
+            padding: 0 0 env(safe-area-inset-bottom,12px);
+            transition: bottom .28s cubic-bezier(.4,0,.2,1);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .channel-sheet.show { bottom: 0; }
+        .sheet-handle { width: 40px; height: 4px; background: var(--light-gray); border-radius: 2px; margin: 10px auto 0; }
+        .sheet-logo { width: 56px; height: 56px; object-fit: contain; border-radius: 8px; background: var(--medium-gray); }
+        .sheet-action-btn {
+            display: flex; align-items: center; gap: 12px;
+            padding: 13px 20px;
+            background: none; border: none; width: 100%;
+            color: var(--text-primary); font-size: 1rem;
+            border-bottom: 1px solid var(--light-gray);
+            transition: background .15s;
+            cursor: pointer;
+            text-align: left;
+        }
+        .sheet-action-btn:last-child { border-bottom: none; }
+        .sheet-action-btn:hover { background: var(--medium-gray); }
+        .sheet-action-btn i { font-size: 1.2rem; width: 24px; text-align: center; }
+
+        /* reorder arrows on desktop inside sheet */
+        .sheet-action-btn.danger { color: #ff6b6b; }
+        .sheet-action-btn.success { color: #6bcb77; }
+        .sheet-action-btn.info-c { color: var(--accent-info); }
+        .sheet-action-btn.warning-c { color: #ffc107; }
+        .sheet-action-btn.purple-c { color: #a78bfa; }
+
+        /* ── Offcanvas Pixeldrain Panel ── */
+        .offcanvas { background-color: var(--dark-gray) !important; border-right: 1px solid var(--light-gray); }
+        .offcanvas-header { border-bottom: 1px solid var(--light-gray); }
+        .offcanvas-title { font-weight: 700; }
+        .pd-section { background: var(--medium-gray); border: 1px solid var(--light-gray); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; }
+        .pd-section h6 { color: var(--accent-info); margin-bottom: .75rem; font-weight: 600; }
+        .pd-badge { display:inline-block; font-size:.7rem; padding:2px 7px; border-radius:99px; background:var(--accent-blue); color:#fff; margin-left:6px; vertical-align:middle; }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#"><i class="bi bi-play-circle-fill"></i> M3U Generator Pro</a>
+        <div class="d-flex align-items-center gap-2 ms-auto">
+            <small id="channelCount" class="navbar-text">0 channels</small>
+            <!-- Pixeldrain hamburger button -->
+            <button class="btn btn-outline-info btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#pixeldrainPanel" title="Pixeldrain Tools">
+                <i class="bi bi-cloud-fill"></i> <span class="d-none d-md-inline">Pixeldrain</span> <i class="bi bi-list"></i>
+            </button>
+            <button class="navbar-toggler ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link active" href="#" data-view="home"><i class="bi bi-house-fill"></i> Home / Generator</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" data-view="bulk"><i class="bi bi-upload"></i> Upload & Bulk Edit</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" data-view="saved"><i class="bi bi-save-fill"></i> Saved Playlists</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://t.me/TECH_HOUSE_01" target="_blank"><i class="bi bi-telegram"></i> Contact</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fanzone-omega.vercel.app/" target="_blank"><i class="bi bi-broadcast"></i> Live TV</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════ PIXELDRAIN OFFCANVAS -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="pixeldrainPanel" style="width:min(420px,100vw)">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title"><i class="bi bi-cloud-fill text-info"></i> Pixeldrain Tools</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+
+        <!-- Import URL -->
+        <div class="pd-section">
+            <h6><i class="bi bi-link-45deg"></i> Import URL</h6>
+            <div class="mb-2">
+                <input type="text" class="form-control form-control-sm" id="pixeldrainUrl" placeholder="https://pixeldrain.com/l/xxx  or  /u/xxx">
+            </div>
+            <div class="mb-2">
+                <input type="text" class="form-control form-control-sm" id="pixeldrainImportGroup" placeholder="Group Name (optional)">
+            </div>
+            <div class="mb-2 d-flex gap-3 flex-wrap">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="pdUseThumbnail" checked>
+                    <label class="form-check-label form-label-sm" for="pdUseThumbnail">Thumbnails as logo</label>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="pdFetchTmdb" checked>
+                    <label class="form-check-label form-label-sm" for="pdFetchTmdb">TMDB poster fallback</label>
+                </div>
+            </div>
+            <div class="mb-2">
+                <select class="form-select form-select-sm" id="pdTypeFilter">
+                    <option value="all">All video files</option>
+                    <option value="mp4">MP4 only</option>
+                    <option value="mkv">MKV only</option>
+                    <option value="m3u8">M3U8/HLS only</option>
+                </select>
+            </div>
+            <button class="btn btn-info w-100 btn-sm mt-1" id="pixeldrainImportBtn" onclick="importFromPixeldrain()">
+                <i class="bi bi-cloud-download"></i> Import
+            </button>
+            <div id="pixeldrainStatus" class="mt-2 text-muted" style="min-height:1.1rem;font-size:.82rem;display:none;"></div>
+        </div>
+
+        <!-- Bulk File IDs -->
+        <div class="pd-section">
+            <h6><i class="bi bi-ui-checks-grid"></i> Bulk File IDs</h6>
+            <textarea class="form-control form-control-sm" id="pdBulkIds" rows="4" placeholder="Paste File IDs (one per line)"></textarea>
+            <div class="mb-2 mt-2">
+                <input type="text" class="form-control form-control-sm" id="pdBulkGroup" placeholder="Group Name">
+            </div>
+            <button class="btn btn-primary w-100 btn-sm" onclick="importPixeldrainBulkIds()">
+                <i class="bi bi-upload"></i> Import IDs
+            </button>
+            <div id="pdBulkStatus" class="mt-1 text-muted" style="font-size:.82rem;"></div>
+        </div>
+
+        <!-- API Key -->
+        <div class="pd-section">
+            <h6><i class="bi bi-key-fill"></i> API Key <span class="pd-badge">Optional</span></h6>
+            <div class="mb-2">
+                <input type="password" class="form-control form-control-sm" id="pdApiKey" placeholder="API key (for private files)">
+            </div>
+            <button class="btn btn-outline-secondary btn-sm w-100" onclick="savePdApiKey()"><i class="bi bi-floppy"></i> Save Key</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="pd-section">
+            <h6><i class="bi bi-bar-chart-fill"></i> Stats</h6>
+            <div class="d-flex justify-content-between text-muted" style="font-size:.85rem;">
+                <span>Total:</span><strong id="pdStatTotal">0</strong>
+            </div>
+            <div class="d-flex justify-content-between text-muted mt-1" style="font-size:.85rem;">
+                <span>Pixeldrain:</span><strong id="pdStatPd">0</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ CHANNEL TAP SHEET -->
+<div class="channel-sheet-backdrop" id="sheetBackdrop" onclick="closeChannelSheet()"></div>
+<div class="channel-sheet" id="channelSheet">
+    <div class="sheet-handle"></div>
+    <!-- header -->
+    <div class="d-flex align-items-center gap-3 px-3 py-3 border-bottom" style="border-color:var(--light-gray)!important">
+        <img id="sheetLogo" class="sheet-logo" src="" onerror="this.style.display='none'" style="display:none">
+        <div id="sheetLogoIcon" class="sheet-logo d-flex align-items-center justify-content-center" style="font-size:1.6rem;"><i class="bi bi-tv"></i></div>
+        <div class="flex-grow-1 overflow-hidden">
+            <div id="sheetName" class="fw-bold" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+            <div id="sheetGroup" class="text-muted" style="font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+            <div id="sheetUrl" class="text-muted" style="font-size:.72rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+        </div>
+    </div>
+    <!-- actions -->
+    <button class="sheet-action-btn info-c" onclick="sheetAction('play')"><i class="bi bi-play-circle-fill"></i> Play in Browser</button>
+    <button class="sheet-action-btn" onclick="sheetAction('external')" style="color:#f57c00;"><i class="bi bi-cast"></i> Open in Leone Player</button>
+    <button class="sheet-action-btn warning-c" onclick="sheetAction('edit')"><i class="bi bi-pencil-fill"></i> Edit Channel</button>
+    <button class="sheet-action-btn" onclick="sheetAction('copyUrl')"><i class="bi bi-clipboard"></i> Copy Stream URL</button>
+    <button class="sheet-action-btn" onclick="sheetAction('moveTop')"><i class="bi bi-arrow-bar-up"></i> Move to Top</button>
+    <button class="sheet-action-btn" onclick="sheetAction('moveUp')"><i class="bi bi-arrow-up"></i> Move Up</button>
+    <button class="sheet-action-btn" onclick="sheetAction('moveDown')"><i class="bi bi-arrow-down"></i> Move Down</button>
+    <button class="sheet-action-btn" onclick="sheetAction('moveBottom')"><i class="bi bi-arrow-bar-down"></i> Move to Bottom</button>
+    <button class="sheet-action-btn danger" onclick="sheetAction('delete')"><i class="bi bi-trash-fill"></i> Delete Channel</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ MAIN -->
+<div class="container-fluid py-3">
+
+    <!-- HOME -->
+    <section id="homeView" class="view-section active">
+
+        <!-- Quick Stats -->
+        <div class="d-flex gap-2 flex-wrap align-items-center mb-3">
+            <div class="bulk-stat-pill"><i class="bi bi-collection-play"></i> <span id="homeStatTotal">0</span> Channels</div>
+            <div class="bulk-stat-pill"><i class="bi bi-folder"></i> <span id="homeStatGroups">0</span> Groups</div>
+            <div class="bulk-stat-pill"><i class="bi bi-exclamation-triangle"></i> <span id="homeStatDupes">0</span> Dupes</div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-5">
+                <!-- Add Channel -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-plus-circle"></i> Add Channel</span>
+                        <div class="form-check form-switch mb-0" style="min-height:auto;">
+                            <input class="form-check-input" type="checkbox" id="seriesModeToggle" style="margin-top:2px;">
+                            <label class="form-check-label" for="seriesModeToggle" style="font-size:.72rem;font-weight:400;color:var(--text-secondary);">Series</label>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Single -->
+                        <div id="singleMode">
+                            <div class="mb-2">
+                                <input type="text" class="form-control form-control-sm" id="channelName" placeholder="Channel Name">
+                            </div>
+                            <input type="hidden" id="contentType" value="auto">
+                            <div class="mb-2">
+                                <input type="text" class="form-control form-control-sm" id="channelUrl" placeholder="Stream URL or Pixeldrain /u/ link">
+                            </div>
+                            <div class="mb-2">
+                                <input type="text" class="form-control form-control-sm" id="channelLogo" placeholder="Logo URL (optional)">
+                            </div>
+                            <button class="btn btn-primary w-100 btn-sm" onclick="addChannel()"><i class="bi bi-plus-lg"></i> Add Channel</button>
+                        </div>
+
+                        <!-- Series -->
+                        <div id="seriesMode" style="display:none;">
+                            <div class="mb-2">
+                                <input type="text" class="form-control form-control-sm" id="seriesName" placeholder="Series Name">
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <input type="number" class="form-control form-control-sm" id="seriesSeason" value="1" min="1" placeholder="Season">
+                                </div>
+                                <div class="col-6">
+                                    <input type="text" class="form-control form-control-sm" id="seriesTmdbId" placeholder="TMDB ID (auto)">
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <input type="text" class="form-control form-control-sm" id="seriesUrl" placeholder="Base URL with pattern  e.g. …/EP.1.mkv">
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-4">
+                                    <input type="number" class="form-control form-control-sm" id="episodeCount" value="10" min="1" placeholder="Count">
+                                </div>
+                                <div class="col-4">
+                                    <input type="number" class="form-control form-control-sm" id="seriesStartEpisode" value="1" min="1" placeholder="Start">
+                                </div>
+                                <div class="col-4">
+                                    <input type="text" class="form-control form-control-sm" id="seriesLogo" placeholder="Logo URL">
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <input type="text" class="form-control form-control-sm" id="seriesGroup" placeholder="Group (optional)">
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="fetchEpisodeTitles" checked>
+                                <label class="form-check-label" for="fetchEpisodeTitles" style="font-size:.78rem;">Fetch TMDB episode titles</label>
+                            </div>
+                            <button class="btn btn-success w-100 btn-sm" onclick="addSeries()"><i class="bi bi-collection-play"></i> Generate Series</button>
+                            <div id="posterStatus" class="mt-1 text-muted" style="min-height:1rem;font-size:.78rem;display:none;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global Settings -->
+                <div class="card">
+                    <div class="card-header"><i class="bi bi-gear-fill"></i> Settings</div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <input type="text" class="form-control form-control-sm" id="globalLogo" placeholder="Global Logo URL" oninput="saveToLocalStorage()" value="https://oxolive.com/wp-content/uploadc">
+                        </div>
+                        <div class="mb-2">
+                            <input type="text" class="form-control form-control-sm" id="globalGroup" placeholder="Global Group Name" oninput="saveToLocalStorage()" value="OXOLIVE">
+                        </div>
+                        <select id="notificationSetting" class="form-select form-select-sm" onchange="saveToLocalStorage()">
+                            <option value="all">Notifications: All</option>
+                            <option value="errors">Notifications: Errors Only</option>
+                            <option value="none">Notifications: None</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- M3U Output -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-file-earmark-code"></i> M3U Output</span>
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="savePlaylist()" title="Save"><i class="bi bi-save"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="clearCurrent()" title="Clear"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <textarea class="form-control form-control-sm mb-2" id="m3uOutput" rows="5" readonly placeholder="Generated M3U will appear here..."></textarea>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-secondary btn-sm flex-fill" onclick="generateM3U()"><i class="bi bi-gear"></i> Generate</button>
+                            <button class="btn btn-success btn-sm flex-fill" onclick="copyToClipboard()"><i class="bi bi-clipboard"></i> Copy</button>
+                            <button class="btn btn-info btn-sm flex-fill" onclick="downloadM3U()"><i class="bi bi-download"></i> .m3u</button>
+                            <button class="btn btn-warning btn-sm flex-fill" onclick="downloadHomeJSON()"><i class="bi bi-filetype-json"></i> JSON</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="card" style="margin-bottom:0;">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-list-ul"></i> Channels <strong id="totalChannelCount">0</strong></span>
+                        <input type="text" class="form-control form-control-sm" style="max-width:180px;" id="searchChannel" placeholder="Search…" oninput="filterChannels()">
+                    </div>
+                    <div id="duplicateWarningBanner" class="duplicate-alert" style="display:none;">
+                        <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                        <strong>Duplicates!</strong> <span id="duplicateCount">0</span> found
+                        <button class="btn btn-sm btn-warning ms-2" style="font-size:.7rem;padding:1px 8px;" onclick="showDuplicatesOnly()">Show</button>
+                        <button class="btn btn-sm btn-outline-light ms-1" style="font-size:.7rem;padding:1px 8px;" onclick="clearDuplicateFilter()">All</button>
+                    </div>
+                    <div class="card-body" id="channelList" style="max-height:calc(100vh - 140px);overflow-y:auto;padding:8px;"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BULK -->
+    <section id="bulkView" class="view-section">
+
+        <!-- Quick Stats -->
+        <div class="d-flex gap-2 flex-wrap align-items-center mb-3">
+            <div class="bulk-stat-pill"><i class="bi bi-collection-play"></i> <span id="bulkStatTotal">0</span> Channels</div>
+            <div class="bulk-stat-pill"><i class="bi bi-folder"></i> <span id="bulkStatGroups">0</span> Groups</div>
+            <div class="bulk-stat-pill"><i class="bi bi-exclamation-triangle"></i> <span id="bulkStatDupes">0</span> Dupes</div>
+            <div class="bulk-stat-pill"><i class="bi bi-image"></i> <span id="bulkStatNoLogo">0</span> No Logo</div>
+            <div class="bulk-stat-pill"><i class="bi bi-hdd"></i> <span id="bulkStatPd">0</span> Pixeldrain</div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6">
+
+                <!-- Import Sources -->
+                <div class="card">
+                    <div class="card-header"><i class="bi bi-cloud-download"></i> Import Sources</div>
+                    <div class="card-body">
+                        <!-- Tabs for import methods -->
+                        <ul class="nav nav-pills nav-fill mb-3 bulk-import-tabs" role="tablist">
+                            <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#importUrl" type="button"><i class="bi bi-link-45deg"></i> URL</button></li>
+                            <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#importPaste" type="button"><i class="bi bi-clipboard"></i> Paste</button></li>
+                            <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#importFile" type="button"><i class="bi bi-file-earmark"></i> File</button></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="importUrl">
+                                <input type="text" class="form-control mb-2" id="fetchLinkUrl" placeholder="https://example.com/playlist.m3u">
+                                <button class="btn btn-primary w-100" id="fetchLinkBtn" onclick="fetchFromLink()"><i class="bi bi-cloud-download"></i> Fetch & Import</button>
+                                <div id="fetchLinkStatus" class="mt-2 text-muted" style="min-height:1.1rem;font-size:.82rem;display:none;"></div>
+                            </div>
+                            <div class="tab-pane fade" id="importPaste">
+                                <textarea class="form-control mb-2" id="m3uPasteInput" rows="6" placeholder="#EXTM3U&#10;#EXTINF:...&#10;https://..."></textarea>
+                                <button class="btn btn-primary w-100" onclick="importM3UFromPaste()"><i class="bi bi-clipboard-check"></i> Import</button>
+                            </div>
+                            <div class="tab-pane fade" id="importFile">
+                                <div class="mb-3">
+                                    <label class="form-label form-label-sm">M3U / TXT</label>
+                                    <input type="file" class="form-control form-control-sm mb-2" id="m3uFileInput" accept=".m3u,.txt">
+                                    <button class="btn btn-primary w-100 btn-sm" onclick="importM3U()"><i class="bi bi-upload"></i> Import M3U/TXT</button>
+                                </div>
+                                <hr>
+                                <div>
+                                    <label class="form-label form-label-sm">CSV</label>
+                                    <input type="file" class="form-control form-control-sm mb-2" id="csvFileInput" accept=".csv">
+                                    <button class="btn btn-success w-100 btn-sm" onclick="importCSV()"><i class="bi bi-table"></i> Import CSV</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Find & Replace -->
+                <div class="card">
+                    <div class="card-header"><i class="bi bi-search"></i> Find & Replace</div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <select class="form-select form-select-sm" id="fnrField">
+                                <option value="name">Channel Name</option>
+                                <option value="url">Stream URL</option>
+                                <option value="group">Group</option>
+                                <option value="logo">Logo URL</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <input type="text" class="form-control form-control-sm" id="fnrFind" placeholder="Find text…">
+                        </div>
+                        <div class="mb-2">
+                            <input type="text" class="form-control form-control-sm" id="fnrReplace" placeholder="Replace with…">
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="fnrRegex">
+                            <label class="form-check-label form-label-sm" for="fnrRegex">Use Regex</label>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-info btn-sm flex-fill" onclick="bulkFindReplace(false)"><i class="bi bi-eye"></i> Preview <span id="fnrPreviewCount"></span></button>
+                            <button class="btn btn-warning btn-sm flex-fill" onclick="bulkFindReplace(true)"><i class="bi bi-arrow-repeat"></i> Replace All</button>
+                        </div>
+                        <div id="fnrStatus" class="mt-2 text-muted" style="font-size:.82rem;"></div>
+                    </div>
+                </div>
+
+                <!-- Bulk Channel Naming -->
+                <div class="card">
+                    <div class="card-header"><i class="bi bi-pencil-square"></i> Bulk Channel Naming</div>
+                    <div class="card-body">
+                        <textarea class="form-control mb-2" id="bulkNames" rows="5" placeholder="Name 1&#10;Name 2&#10;Name 3"></textarea>
+                        <button class="btn btn-primary w-100 btn-sm" onclick="applyBulkNames()"><i class="bi bi-arrow-repeat"></i> Apply Names Sequentially</button>
+                    </div>
+                </div>
+
+                <!-- Cleanup Tools -->
+                <div class="card">
+                    <div class="card-header"><i class="bi bi-stars"></i> Cleanup Tools</div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-warning btn-sm" onclick="removeDuplicatesByLink()"><i class="bi bi-link"></i> Remove Duplicates by URL</button>
+                            <button class="btn btn-warning btn-sm" onclick="removeDuplicatesByName()"><i class="bi bi-type"></i> Remove Duplicates by Name</button>
+                            <button class="btn btn-outline-info btn-sm" onclick="bulkCleanNames()"><i class="bi bi-magic"></i> Clean Names (Remove File Extensions)</button>
+                            <button class="btn btn-outline-info btn-sm" onclick="bulkTrimWhitespace()"><i class="bi bi-text-indent-left"></i> Trim Whitespace from All Fields</button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="bulkRemoveNoUrl()"><i class="bi bi-x-octagon"></i> Remove Channels with No URL</button>
+                        </div>
+                        <div id="duplicateRemoveStatus" class="mt-2 text-muted" style="font-size:.82rem;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+
+                <!-- Bulk Logo/Group -->
+                <div class="card">
+                    <div class="card-header"><i class="bi bi-image"></i> Bulk Logo & Group</div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <input type="text" class="form-control form-control-sm" id="bulkLogo" placeholder="Logo URL (apply to all)">
+                        </div>
+                        <div class="mb-2">
+                            <input type="text" class="form-control form-control-sm" id="bulkGroup" placeholder="Group name (apply to all)">
+                        </div>
+                        <button class="btn btn-warning w-100 btn-sm" onclick="applyBulkLogoGroup()"><i class="bi bi-check-all"></i> Apply to All</button>
+                    </div>
+                </div>
+
+                <!-- Sort & Order -->
+                <div class="card">
+                    <div class="card-header"><i class="bi bi-sort-alpha-down"></i> Sort & Order</div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-light btn-sm" onclick="bulkSort('name-asc')"><i class="bi bi-sort-alpha-down"></i> Sort by Name (A→Z)</button>
+                            <button class="btn btn-outline-light btn-sm" onclick="bulkSort('name-desc')"><i class="bi bi-sort-alpha-up"></i> Sort by Name (Z→A)</button>
+                            <button class="btn btn-outline-light btn-sm" onclick="bulkSort('group-asc')"><i class="bi bi-folder"></i> Sort by Group (A→Z)</button>
+                            <button class="btn btn-outline-info btn-sm" onclick="bulkSort('shuffle')"><i class="bi bi-shuffle"></i> Shuffle Randomly</button>
+                            <button class="btn btn-outline-warning btn-sm" onclick="bulkSort('reverse')"><i class="bi bi-arrow-down-up"></i> Reverse Order</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Batch URL Builder -->
+                <div class="card">
+                    <div class="card-header"><i class="bi bi-link-45deg"></i> Batch URL Builder</div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <input type="text" class="form-control form-control-sm" id="batchBaseUrl" placeholder="Base URL  e.g. https://cdn.site.com/video">
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <input type="text" class="form-control form-control-sm" id="batchPrefix" placeholder="Prefix  e.g. EP">
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control form-control-sm" id="batchExt" placeholder="Extension  e.g. .mkv">
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4">
+                                <input type="number" class="form-control form-control-sm" id="batchFrom" value="1" min="1" placeholder="From">
+                            </div>
+                            <div class="col-4">
+                                <input type="number" class="form-control form-control-sm" id="batchTo" value="10" min="1" placeholder="To">
+                            </div>
+                            <div class="col-4">
+                                <input type="number" class="form-control form-control-sm" id="batchPad" value="2" min="1" max="5" placeholder="Pad">
+                            </div>
+                        </div>
+                        <small class="text-muted d-block mb-2">Preview: <code id="batchPreview">…</code></small>
+                        <button class="btn btn-success w-100 btn-sm" onclick="batchUrlGenerate()"><i class="bi bi-plus-circle"></i> Generate Channels</button>
+                    </div>
+                </div>
+
+                <!-- Episode Range Update -->
+                <div class="card">
+                    <div class="card-header"><i class="bi bi-lightning-charge"></i> Episode Range Update</div>
+                    <div class="card-body">
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <input type="number" class="form-control form-control-sm" id="rangeStart" value="1" min="1" placeholder="Start index">
+                            </div>
+                            <div class="col-6">
+                                <input type="number" class="form-control form-control-sm" id="rangeEnd" value="10" min="1" placeholder="End index">
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <input type="text" class="form-control form-control-sm" id="rangePrefix" placeholder="New name prefix  e.g. Breaking Bad EP">
+                        </div>
+                        <button class="btn btn-danger w-100 btn-sm" onclick="updateEpisodeRange()"><i class="bi bi-arrow-clockwise"></i> Update Range</button>
+                    </div>
+                </div>
+
+                <!-- Export Options -->
+                <div class="card">
+                    <div class="card-header"><i class="bi bi-box-arrow-up"></i> Export</div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-success btn-sm" onclick="exportAsJSON()"><i class="bi bi-filetype-json"></i> Export as JSON</button>
+                            <button class="btn btn-outline-success btn-sm" onclick="exportAsCSV()"><i class="bi bi-filetype-csv"></i> Export as CSV</button>
+                            <button class="btn btn-outline-success btn-sm" onclick="exportAsTXT()"><i class="bi bi-filetype-txt"></i> Export as TXT (URLs only)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-3" style="border-color:var(--light-gray);">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-file-earmark-code"></i> M3U Output</span>
+                        <button class="btn btn-sm btn-outline-light" onclick="openBulkChannelList()"><i class="bi bi-list-ul"></i> View Channels</button>
+                    </div>
+                    <div class="card-body">
+                        <textarea class="form-control mb-3" id="m3uBulkOutput" rows="6" readonly placeholder="Generated M3U…"></textarea>
+                        <div class="d-flex gap-2 flex-wrap justify-content-end">
+                            <button class="btn btn-secondary btn-sm" onclick="generateBulkM3U()"><i class="bi bi-gear"></i> Generate</button>
+                            <button class="btn btn-success btn-sm" onclick="copyBulkToClipboard()"><i class="bi bi-clipboard"></i> Copy</button>
+                            <button class="btn btn-info btn-sm" onclick="downloadBulkM3U()"><i class="bi bi-download"></i> Download .m3u</button>
+                            <button class="btn btn-warning btn-sm" onclick="downloadHomeJSON()"><i class="bi bi-filetype-json"></i> JSON</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SAVED -->
+    <section id="savedView" class="view-section">
+        <div class="d-flex gap-2 flex-wrap align-items-center mb-3">
+            <div class="bulk-stat-pill"><i class="bi bi-archive"></i> <span id="savedStatCount">0</span> Playlists</div>
+        </div>
+        <div class="card">
+            <div class="card-header"><i class="bi bi-archive"></i> Saved Playlists</div>
+            <div class="card-body" id="savedPlaylistsList" style="max-height:calc(100vh - 160px);overflow-y:auto;">
+                <div class="text-center text-muted py-4"><i class="bi bi-folder-x" style="font-size:2.2rem;"></i><p style="font-size:.85rem;">No saved playlists yet.</p></div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ MODALS -->
+
+<!-- Alert -->
+<div class="modal fade" id="alertModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="alertModalTitle">Notification</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body" id="alertModalBody"></div>
+        <div class="modal-footer"><button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button></div>
+    </div></div>
+</div>
+
+<!-- Video -->
+<div class="modal fade" id="videoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="videoModalTitle">Stream Preview</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><video id="htmlVideoPlayer" controls preload="auto" width="100%" height="400" autoplay>Your browser does not support the video tag.</video></div>
+    </div></div>
+</div>
+
+
+
+<!-- Edit Channel -->
+<div class="modal fade" id="editChannelModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title"><i class="bi bi-pencil"></i> Edit Channel</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <input type="hidden" id="editChannelIndex">
+            <div class="mb-2">
+                <label class="form-label">Channel Name</label>
+                <input type="text" class="form-control form-control-sm" id="editChannelName">
+            </div>
+            <div class="mb-2">
+                <label class="form-label">Stream URL</label>
+                <div class="input-group input-group-sm">
+                    <input type="text" class="form-control form-control-sm" id="editChannelUrl">
+                    <button class="btn btn-outline-info" type="button" onclick="copyEditUrl()" title="Copy URL"><i class="bi bi-clipboard"></i></button>
+                </div>
+            </div>
+            <div class="mb-2">
+                <label class="form-label">Group</label>
+                <input type="text" class="form-control form-control-sm" id="editChannelGroup">
+            </div>
+
+            <!-- Logo Section -->
+            <div class="mb-2">
+                <label class="form-label">Logo URL</label>
+                <div class="input-group input-group-sm">
+                    <input type="text" class="form-control form-control-sm" id="editChannelLogo" oninput="previewEditLogo()">
+                    <button class="btn btn-outline-secondary" type="button" onclick="clearEditLogo()" title="Clear logo"><i class="bi bi-x-lg"></i></button>
+                </div>
+            </div>
+            <!-- Logo Preview -->
+            <div id="editLogoPreviewWrap" class="text-center mb-2" style="display:none;">
+                <img id="editLogoPreview" src="" style="max-width:80px;max-height:80px;object-fit:contain;border-radius:8px;border:1px solid var(--light-gray);background:var(--medium-gray);" onerror="this.parentElement.style.display='none'">
+            </div>
+
+            <!-- TMDB Logo Search -->
+            <div class="edit-logo-search-section" style="background:var(--medium-gray);border:1px solid var(--light-gray);border-radius:8px;padding:10px;margin-bottom:4px;">
+                <label class="form-label" style="font-size:.74rem;color:var(--accent-info);margin-bottom:5px;"><i class="bi bi-search"></i> Search Logo (TMDB)</label>
+                <div class="input-group input-group-sm mb-2">
+                    <input type="text" class="form-control form-control-sm" id="editLogoSearchQuery" placeholder="Search movie / series name…">
+                    <button class="btn btn-info" type="button" onclick="searchEditLogo()" id="editLogoSearchBtn"><i class="bi bi-search"></i></button>
+                </div>
+                <div id="editLogoSearchResults" style="display:none;max-height:180px;overflow-y:auto;"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="saveEditedChannel()"><i class="bi bi-check-lg"></i> Save</button>
+        </div>
+    </div></div>
+</div>
+
+<!-- CSV Map -->
+<div class="modal fade" id="csvMapModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">CSV Column Mapping</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <p>Map columns to fields.</p>
+            <div class="mb-3"><label class="form-label">Name Column (Required)</label><select class="form-select" id="csvNameCol"></select></div>
+            <div class="mb-3"><label class="form-label">URL Column (Required)</label><select class="form-select" id="csvUrlCol"></select></div>
+            <div class="mb-3"><label class="form-label">Logo Column (Optional)</label><select class="form-select" id="csvLogoCol"></select></div>
+            <div class="mb-3"><label class="form-label">Group Column (Optional)</label><select class="form-select" id="csvGroupCol"></select></div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="processCsvImport()">Import</button>
+        </div>
+    </div></div>
+</div>
+
+<!-- Save Playlist -->
+<div class="modal fade" id="savePlaylistModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Save Current Playlist</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><div class="mb-3"><label class="form-label">Playlist Name</label><input type="text" class="form-control" id="playlistName" placeholder="My Awesome Playlist"></div></div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-success" onclick="confirmSavePlaylist()">Save</button>
+        </div>
+    </div></div>
+</div>
+
+<!-- Download Filename -->
+<div class="modal fade" id="downloadFilenameModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title"><i class="bi bi-download"></i> Download M3U File</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <div class="mb-3">
+                <label class="form-label">File Name</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="downloadFilename" placeholder="playlist">
+                    <span class="input-group-text">.m3u</span>
+                </div>
+                <small class="text-muted">Enter filename without extension</small>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-info" onclick="confirmDownload()"><i class="bi bi-download"></i> Download</button>
+        </div>
+    </div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════════════════════ */
+let channels = [];
+let csvData = null;
+let htmlVideoPlayer = null;
+let showOnlyDuplicates = false;
+let pendingDownloadSource = null;
+let sheetTargetIndex = -1;          // which channel the bottom sheet is for
+let dragSrcIndex = -1;              // drag-and-drop source index
+
+const SESSION_STORAGE_KEY = 'm3uGeneratorCurrentSession';
+const TMDB_API_KEY = '88649105198c3eecb4d2d6091d7ce972';
+const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
+const TMDB_CACHE_KEY = 'tmdbLogoCache_v2';
+
+// Leone Player package name for Android intent
+const LEONE_PLAYER_PACKAGE = 'com.genuine.leone';
+
+/* ════════════════════════════════════════════════════════════════
+   TMDB CACHE
+════════════════════════════════════════════════════════════════ */
+function getTmdbCache() { try { return JSON.parse(localStorage.getItem(TMDB_CACHE_KEY) || '{}'); } catch { return {}; } }
+function setTmdbCache(c) { try { localStorage.setItem(TMDB_CACHE_KEY, JSON.stringify(c)); } catch {} }
+
+async function tmdbSearchMulti(query) {
+    if (!query?.trim()) return null;
+    const q = query.trim(), cache = getTmdbCache(), k = `search:${q}`;
+    if (k in cache) return cache[k];
+    try {
+        const r = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&include_adult=false&page=1`);
+        if (!r.ok) throw 0;
+        const d = await r.json();
+        const res = d?.results?.length ? d.results : null;
+        setTmdbCache({ ...getTmdbCache(), [k]: res }); return res;
+    } catch { setTmdbCache({ ...getTmdbCache(), [`search:${q}`]: null }); return null; }
+}
+
+async function fetchMovieDetails(id) {
+    const cache = getTmdbCache(), k = `movie:${id}`;
+    if (k in cache) return cache[k];
+    try {
+        const r = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${TMDB_API_KEY}`);
+        if (!r.ok) throw 0;
+        const d = await r.json();
+        setTmdbCache({ ...getTmdbCache(), [k]: d }); return d;
+    } catch { setTmdbCache({ ...getTmdbCache(), [`movie:${id}`]: null }); return null; }
+}
+
+async function fetchFirstPoster(query) {
+    if (!query?.trim()) return null;
+    const q = query.trim(), cache = getTmdbCache(), k = `poster:${q}`;
+    if (k in cache) return cache[k];
+    const results = await tmdbSearchMulti(q);
+    const chosen = results?.find(r => r.poster_path);
+    const url = chosen ? TMDB_IMAGE_BASE + chosen.poster_path : null;
+    setTmdbCache({ ...getTmdbCache(), [k]: url }); return url;
+}
+
+async function assignMovieAutoGroup(name, index) {
+    if (!name || typeof index !== 'number' || !channels[index]) return;
+    if (channels[index].group?.trim()) return;
+    const results = await tmdbSearchMulti(name);
+    const movie = results?.find(r => r.media_type === 'movie');
+    if (!movie) return;
+    const det = await fetchMovieDetails(movie.id);
+    if (!det) return;
+    const year = det.release_date?.split('-')[0] || '';
+    const genre = det.genres?.[0]?.name || '';
+    const grp = [year, genre].filter(Boolean).join(' - ');
+    if (grp && !channels[index].group?.trim()) channels[index].group = grp;
+    if (!channels[index].logo?.trim() && det.poster_path) channels[index].logo = TMDB_IMAGE_BASE + det.poster_path;
+    saveToLocalStorage(); renderChannels(); generateM3U();
+}
+
+async function fetchSeriesPosterOnly(query) {
+    if (!query?.trim()) return null;
+    const cache = getTmdbCache(), k = `seriesPoster:${query}`;
+    if (k in cache) return cache[k];
+    try {
+        const r = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&page=1&include_adult=false`);
+        if (!r.ok) throw 0;
+        const d = await r.json();
+        const chosen = d?.results?.[0];
+        const url = chosen?.poster_path ? TMDB_IMAGE_BASE + chosen.poster_path : null;
+        setTmdbCache({ ...getTmdbCache(), [k]: url }); return url;
+    } catch { setTmdbCache({ ...getTmdbCache(), [`seriesPoster:${query}`]: null }); return null; }
+}
+
+async function fetchTvShowId(query) {
+    if (!query?.trim()) return null;
+    const cache = getTmdbCache(), k = `tvid:${query.trim()}`;
+    if (k in cache) return cache[k];
+    try {
+        const r = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query.trim())}&page=1&include_adult=false`);
+        if (!r.ok) throw 0;
+        const d = await r.json();
+        const id = d?.results?.[0]?.id || null;
+        setTmdbCache({ ...getTmdbCache(), [k]: id }); return id;
+    } catch { return null; }
+}
+
+async function fetchEpisodeTitle(tvId, season, episode) {
+    if (!tvId) return null;
+    const cache = getTmdbCache(), k = `ep:${tvId}:${season}:${episode}`;
+    if (k in cache) return cache[k];
+    try {
+        const r = await fetch(`https://api.themoviedb.org/3/tv/${tvId}/season/${season}/episode/${episode}?api_key=${TMDB_API_KEY}`);
+        if (!r.ok) { setTmdbCache({ ...getTmdbCache(), [k]: null }); return null; }
+        const d = await r.json();
+        const title = d?.name || null;
+        setTmdbCache({ ...getTmdbCache(), [k]: title }); return title;
+    } catch { return null; }
+}
+
+async function tmdbFetchAndAssign(name, index) {
+    if (!name || typeof index !== 'number') return;
+    const img = await fetchFirstPoster(name);
+    if (img && channels[index] && !channels[index].logo?.trim()) {
+        channels[index].logo = img;
+        saveToLocalStorage(); renderChannels(); generateM3U();
+    }
+}
+
+function detectContentTypeFromName(name) {
+    if (!name) return 'auto';
+    return /\(\d{4}\)|\s\d{4}\s/.test(name) ? 'movie' : 'auto';
+}
+
+/* ════════════════════════════════════════════════════════════════
+   DUPLICATES
+════════════════════════════════════════════════════════════════ */
+function getDuplicateIndices() {
+    const urlMap = new Map(), nameMap = new Map(), dupes = new Set();
+    channels.forEach((ch, i) => {
+        const u = ch.url.trim().toLowerCase(), n = ch.name.trim().toLowerCase();
+        if (urlMap.has(u)) { dupes.add(urlMap.get(u)); dupes.add(i); } else urlMap.set(u, i);
+        if (nameMap.has(n)) { dupes.add(nameMap.get(n)); dupes.add(i); } else nameMap.set(n, i);
+    });
+    return dupes;
+}
+
+function updateDuplicateWarning() {
+    const d = getDuplicateIndices();
+    const banner = document.getElementById('duplicateWarningBanner');
+    banner.style.display = d.size > 0 ? 'block' : 'none';
+    if (d.size > 0) document.getElementById('duplicateCount').textContent = d.size;
+}
+
+function showDuplicatesOnly() { showOnlyDuplicates = true; renderChannels(); }
+function clearDuplicateFilter() { showOnlyDuplicates = false; renderChannels(); }
+
+function removeDuplicatesByLink() {
+    const seen = new Map(), toRemove = [];
+    channels.forEach((ch, i) => { const u = ch.url.trim().toLowerCase(); if (seen.has(u)) toRemove.push(i); else seen.set(u, i); });
+    if (!toRemove.length) { showAlert('Info', 'No duplicate links found!'); return; }
+    for (let i = toRemove.length - 1; i >= 0; i--) channels.splice(toRemove[i], 1);
+    saveToLocalStorage(); renderChannels(); updateChannelCount(); generateM3U();
+    document.getElementById('duplicateRemoveStatus').textContent = `Removed ${toRemove.length} duplicate(s) by link!`;
+}
+
+function removeDuplicatesByName() {
+    const seen = new Map(), toRemove = [];
+    channels.forEach((ch, i) => { const n = ch.name.trim().toLowerCase(); if (seen.has(n)) toRemove.push(i); else seen.set(n, i); });
+    if (!toRemove.length) { showAlert('Info', 'No duplicate names found!'); return; }
+    for (let i = toRemove.length - 1; i >= 0; i--) channels.splice(toRemove[i], 1);
+    saveToLocalStorage(); renderChannels(); updateChannelCount(); generateM3U();
+    document.getElementById('duplicateRemoveStatus').textContent = `Removed ${toRemove.length} duplicate(s) by name!`;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   CHANNEL BOTTOM SHEET (tap action)
+════════════════════════════════════════════════════════════════ */
+function openChannelSheet(index) {
+    sheetTargetIndex = index;
+    const ch = channels[index];
+    const globalLogo = document.getElementById('globalLogo').value.trim();
+    const logo = ch.logo || globalLogo;
+
+    const sheetLogo = document.getElementById('sheetLogo');
+    const sheetLogoIcon = document.getElementById('sheetLogoIcon');
+    if (logo) {
+        sheetLogo.src = logo;
+        sheetLogo.style.display = 'block';
+        sheetLogoIcon.style.display = 'none';
+    } else {
+        sheetLogo.style.display = 'none';
+        sheetLogoIcon.style.display = 'flex';
+    }
+    document.getElementById('sheetName').textContent = ch.name;
+    document.getElementById('sheetGroup').textContent = ch.group ? `📁 ${ch.group}` : '';
+    document.getElementById('sheetUrl').textContent = ch.url;
+
+    document.getElementById('sheetBackdrop').classList.add('show');
+    document.getElementById('channelSheet').classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeChannelSheet() {
+    document.getElementById('sheetBackdrop').classList.remove('show');
+    document.getElementById('channelSheet').classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+function sheetAction(action) {
+    const idx = sheetTargetIndex;
+    if (idx < 0 || idx >= channels.length) { closeChannelSheet(); return; }
+    closeChannelSheet();
+
+    switch (action) {
+        case 'play': playChannel(idx); break;
+        case 'external': playInExternalPlayer(idx); break;
+        case 'edit': openEditChannelModal(idx); break;
+        case 'copyUrl':
+            navigator.clipboard.writeText(channels[idx].url)
+                .then(() => showAlert('Copied', 'Stream URL copied to clipboard!'))
+                .catch(() => prompt('Copy this URL:', channels[idx].url));
+            break;
+        case 'moveTop':
+            if (idx > 0) { channels.unshift(channels.splice(idx, 1)[0]); afterReorder(); }
+            break;
+        case 'moveUp':
+            if (idx > 0) { [channels[idx - 1], channels[idx]] = [channels[idx], channels[idx - 1]]; afterReorder(); }
+            break;
+        case 'moveDown':
+            if (idx < channels.length - 1) { [channels[idx], channels[idx + 1]] = [channels[idx + 1], channels[idx]]; afterReorder(); }
+            break;
+        case 'moveBottom':
+            if (idx < channels.length - 1) { channels.push(channels.splice(idx, 1)[0]); afterReorder(); }
+            break;
+        case 'delete':
+            if (confirm(`Delete "${channels[idx].name}"?`)) {
+                channels.splice(idx, 1);
+                saveToLocalStorage(); renderChannels(); updateChannelCount(); generateM3U();
+            }
+            break;
+    }
+}
+
+function afterReorder() {
+    saveToLocalStorage(); renderChannels(); generateM3U();
+}
+
+/* ════════════════════════════════════════════════════════════════
+   DRAG & DROP REORDER
+════════════════════════════════════════════════════════════════ */
+function setupDragAndDrop(container) {
+    let dragOverEl = null;
+
+    container.addEventListener('dragstart', e => {
+        const item = e.target.closest('.channel-item[draggable]');
+        if (!item) return;
+        dragSrcIndex = parseInt(item.dataset.index);
+        item.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', dragSrcIndex);
+    });
+
+    container.addEventListener('dragend', e => {
+        document.querySelectorAll('.channel-item.dragging').forEach(el => el.classList.remove('dragging'));
+        document.querySelectorAll('.channel-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+        dragOverEl = null;
+    });
+
+    container.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        const item = e.target.closest('.channel-item[draggable]');
+        if (item && item !== dragOverEl) {
+            document.querySelectorAll('.channel-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+            item.classList.add('drag-over');
+            dragOverEl = item;
+        }
+    });
+
+    container.addEventListener('dragleave', e => {
+        if (!container.contains(e.relatedTarget)) {
+            document.querySelectorAll('.channel-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+            dragOverEl = null;
+        }
+    });
+
+    container.addEventListener('drop', e => {
+        e.preventDefault();
+        const item = e.target.closest('.channel-item[draggable]');
+        if (!item) return;
+        const destIndex = parseInt(item.dataset.index);
+        if (dragSrcIndex < 0 || dragSrcIndex === destIndex) return;
+
+        // Reorder
+        const moved = channels.splice(dragSrcIndex, 1)[0];
+        const newDest = destIndex > dragSrcIndex ? destIndex - 1 : destIndex;
+        channels.splice(newDest, 0, moved);
+
+        dragSrcIndex = -1;
+        afterReorder();
+    });
+}
+
+/* Touch-based reorder (long-press + drag) */
+let touchDragIndex = -1;
+let touchClone = null;
+let touchStartY = 0;
+let touchLastY = 0;
+let touchHoldTimer = null;
+let touchDragging = false;
+
+function setupTouchReorder(container) {
+    container.addEventListener('touchstart', e => {
+        const item = e.target.closest('.channel-item[data-index]');
+        const handle = e.target.closest('.drag-handle');
+        if (!item || !handle) return;
+
+        touchDragIndex = parseInt(item.dataset.index);
+        touchStartY = e.touches[0].clientY;
+
+        // long-press 200ms to start drag
+        touchHoldTimer = setTimeout(() => {
+            touchDragging = true;
+            item.classList.add('dragging');
+            // visual clone
+            touchClone = item.cloneNode(true);
+            touchClone.style.cssText = `position:fixed;left:${item.getBoundingClientRect().left}px;top:${item.getBoundingClientRect().top}px;width:${item.offsetWidth}px;opacity:.85;z-index:9999;pointer-events:none;background:var(--light-gray);border:2px solid var(--accent-blue);border-radius:.375rem;`;
+            document.body.appendChild(touchClone);
+        }, 200);
+    }, { passive: true });
+
+    container.addEventListener('touchmove', e => {
+        if (!touchDragging || !touchClone) return;
+        e.preventDefault();
+        touchLastY = e.touches[0].clientY;
+        const dy = touchLastY - touchStartY;
+        touchClone.style.top = (parseFloat(touchClone.style.top) + dy) + 'px';
+        touchStartY = touchLastY;
+
+        // find element under touch
+        touchClone.style.display = 'none';
+        const elBelow = document.elementFromPoint(e.touches[0].clientX, touchLastY);
+        touchClone.style.display = '';
+        const targetItem = elBelow?.closest('.channel-item[data-index]');
+        document.querySelectorAll('.channel-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+        if (targetItem) targetItem.classList.add('drag-over');
+    }, { passive: false });
+
+    container.addEventListener('touchend', e => {
+        clearTimeout(touchHoldTimer);
+        if (!touchDragging) return;
+        touchDragging = false;
+
+        if (touchClone) { touchClone.remove(); touchClone = null; }
+        document.querySelectorAll('.channel-item.dragging').forEach(el => el.classList.remove('dragging'));
+
+        const elBelow = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        const targetItem = elBelow?.closest('.channel-item[data-index]');
+        document.querySelectorAll('.channel-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+        if (targetItem) {
+            const destIndex = parseInt(targetItem.dataset.index);
+            if (touchDragIndex >= 0 && touchDragIndex !== destIndex) {
+                const moved = channels.splice(touchDragIndex, 1)[0];
+                const newDest = destIndex > touchDragIndex ? destIndex - 1 : destIndex;
+                channels.splice(newDest, 0, moved);
+                afterReorder();
+            }
+        }
+        touchDragIndex = -1;
+    }, { passive: true });
+}
+
+/* ════════════════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+    loadFromLocalStorage();
+    renderChannels();
+    setupNavigation();
+    setupSeriesModeToggle();
+    setupHtmlVideoPlayer();
+    updateChannelCount();
+    generateM3U();
+
+    document.getElementById('downloadFilename').addEventListener('keydown', e => {
+        if (e.key === 'Enter') confirmDownload();
+    });
+    document.getElementById('editLogoSearchQuery').addEventListener('keydown', e => {
+        if (e.key === 'Enter') searchEditLogo();
+    });
+
+    // setup drag/drop on channel list
+    const cl = document.getElementById('channelList');
+    setupDragAndDrop(cl);
+    setupTouchReorder(cl);
+
+    // Load saved PD API key
+    const savedKey = localStorage.getItem('pdApiKey');
+    if (savedKey) document.getElementById('pdApiKey').value = savedKey;
+
+    // swipe-down to close sheet
+    const sheet = document.getElementById('channelSheet');
+    let sheetStartY = 0;
+    sheet.addEventListener('touchstart', e => { sheetStartY = e.touches[0].clientY; }, { passive: true });
+    sheet.addEventListener('touchend', e => {
+        if (e.changedTouches[0].clientY - sheetStartY > 60) closeChannelSheet();
+    }, { passive: true });
+});
+
+function setupNavigation() {
+    document.querySelectorAll('.nav-link[data-view]').forEach(link => {
+        link.addEventListener('click', e => {
+            e.preventDefault();
+            const view = link.dataset.view;
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+            document.getElementById(view + 'View').classList.add('active');
+            link.classList.add('active');
+            if (view === 'saved') renderSavedPlaylists();
+            else if (view === 'bulk') { generateM3U('m3uBulkOutput'); updateBulkStats(); }
+        });
+    });
+}
+
+function openBulkChannelList() {
+    document.querySelector('.nav-link[data-view="home"]').click();
+    document.getElementById('channelList').scrollIntoView({ behavior: 'smooth' });
+}
+
+function setupSeriesModeToggle() {
+    document.getElementById('seriesModeToggle').addEventListener('change', function () {
+        document.getElementById('singleMode').style.display = this.checked ? 'none' : 'block';
+        document.getElementById('seriesMode').style.display = this.checked ? 'block' : 'none';
+    });
+}
+
+function setupHtmlVideoPlayer() {
+    htmlVideoPlayer = document.getElementById('htmlVideoPlayer');
+    document.getElementById('videoModal').addEventListener('hidden.bs.modal', () => {
+        htmlVideoPlayer.pause();
+        htmlVideoPlayer.removeAttribute('src');
+        htmlVideoPlayer.load();
+    });
+}
+
+/* ════════════════════════════════════════════════════════════════
+   ADD CHANNEL / SERIES
+════════════════════════════════════════════════════════════════ */
+async function addChannel() {
+    const name = document.getElementById('channelName').value.trim();
+    const url = document.getElementById('channelUrl').value.trim();
+    const logo = document.getElementById('channelLogo').value.trim();
+    const globalLogo = document.getElementById('globalLogo').value.trim();
+    const globalGroup = document.getElementById('globalGroup').value.trim();
+
+    // Pixeldrain list → redirect to offcanvas panel
+    const pdListMatch = url.match(/pixeldrain\.(?:com|dev)\/l\/([a-zA-Z0-9_-]+)/);
+    if (pdListMatch) {
+        document.getElementById('pixeldrainUrl').value = url;
+        document.getElementById('channelUrl').value = '';
+        document.getElementById('channelName').value = '';
+        bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('pixeldrainPanel')).show();
+        showAlert('Info', 'Pixeldrain list detected! Use the Pixeldrain panel to import.');
+        return;
+    }
+
+    // Pixeldrain single file → import directly on home page
+    const pdFileMatch = url.match(/pixeldrain\.(?:com|dev)\/u\/([a-zA-Z0-9_-]+)/);
+    if (pdFileMatch) {
+        const fileId = pdFileMatch[1];
+        document.getElementById('channelUrl').value = '';
+        document.getElementById('channelName').value = '';
+        await importPixeldrainSingle(fileId, name);
+        return;
+    }
+
+    if (!name || !url) { showAlert('Error', 'Please provide both channel name and URL'); return; }
+
+    const chObj = { name, url, logo: logo || globalLogo || '', group: globalGroup || '', contentType: detectContentTypeFromName(name), duration: '-1', vlcOpt: '' };
+    channels.push(chObj);
+    const idx = channels.length - 1;
+    document.getElementById('channelName').value = '';
+    document.getElementById('channelUrl').value = '';
+    document.getElementById('channelLogo').value = '';
+    saveToLocalStorage(); renderChannels(); updateChannelCount(); generateM3U();
+    showAlert('Success', `Channel "${name}" added!`);
+
+    if (!chObj.group?.trim() && (chObj.contentType === 'movie' || chObj.contentType === 'auto'))
+        assignMovieAutoGroup(name, idx);
+    if (!chObj.logo?.trim())
+        tmdbFetchAndAssign(name, idx);
+}
+
+async function addSeries() {
+    const seriesName = document.getElementById('seriesName').value.trim();
+    const baseUrl = document.getElementById('seriesUrl').value.trim();
+    const count = parseInt(document.getElementById('episodeCount').value);
+    const startEpisode = parseInt(document.getElementById('seriesStartEpisode').value) || 1;
+    const season = parseInt(document.getElementById('seriesSeason').value) || 1;
+    const logo = document.getElementById('seriesLogo').value.trim();
+    const seriesGroup = document.getElementById('seriesGroup').value.trim();
+    const globalGroup = document.getElementById('globalGroup').value.trim();
+    const globalLogo = document.getElementById('globalLogo').value.trim();
+    const fetchTitles = document.getElementById('fetchEpisodeTitles').checked;
+    const manualTmdbId = document.getElementById('seriesTmdbId').value.trim();
+
+    if (!seriesName || !baseUrl || count < 1) { showAlert('Error', 'Please provide series name, base URL, and episode count'); return; }
+    const pattern = analyzeUrlPattern(baseUrl);
+    if (!pattern) { showAlert('Error', 'Could not detect episode pattern in URL'); return; }
+
+    const statusEl = document.getElementById('posterStatus');
+    statusEl.style.display = 'block';
+    statusEl.textContent = 'Preparing series...';
+
+    let tvId = null;
+    if (fetchTitles) {
+        if (manualTmdbId && !isNaN(+manualTmdbId)) {
+            tvId = +manualTmdbId;
+            statusEl.textContent = `Using TMDB ID: ${tvId}`;
+        } else {
+            statusEl.textContent = `Searching TMDB for: ${seriesName}`;
+            tvId = await fetchTvShowId(seriesName);
+            statusEl.textContent = tvId ? `Found TMDB ID: ${tvId}. Fetching titles…` : `Not found on TMDB — using default names.`;
+        }
+    }
+
+    const startingIndex = channels.length;
+    let episodeTitles = [];
+    if (fetchTitles && tvId) {
+        statusEl.textContent = `Fetching ${count} episode title(s)…`;
+        episodeTitles = await Promise.all(
+            Array.from({ length: count }, (_, i) => fetchEpisodeTitle(tvId, season, startEpisode + i))
+        );
+        statusEl.textContent = 'Titles fetched! Generating entries…';
+    }
+
+    for (let i = 0; i < count; i++) {
+        const ep = startEpisode + i;
+        const s = String(season).padStart(2, '0'), e = String(ep).padStart(2, '0');
+        const code = `S${s}EP${e}`;
+        const title = fetchTitles && episodeTitles[i] ? episodeTitles[i] : null;
+        channels.push({
+            name: title ? `${code} - ${title}` : `${code}`,
+            url: generateEpisodeUrl(baseUrl, pattern, ep),
+            logo: logo || globalLogo || '',
+            group: seriesGroup || globalGroup || '',
+            duration: '-1', vlcOpt: '', contentType: 'tv'
+        });
+    }
+
+    document.getElementById('seriesName').value = '';
+    document.getElementById('seriesUrl').value = '';
+    document.getElementById('episodeCount').value = '10';
+    document.getElementById('seriesLogo').value = '';
+    document.getElementById('seriesStartEpisode').value = '1';
+    document.getElementById('seriesGroup').value = '';
+    document.getElementById('seriesTmdbId').value = '';
+
+    saveToLocalStorage(); renderChannels(); updateChannelCount(); generateM3U();
+    showAlert('Success', `${count} episodes added!`);
+
+    if (!(logo || globalLogo)) {
+        (async () => {
+            try {
+                statusEl.textContent = 'Fetching series poster…';
+                let img = seriesGroup ? await fetchSeriesPosterOnly(seriesGroup) : null;
+                if (!img) img = await fetchSeriesPosterOnly(seriesName);
+                if (!img) img = await fetchFirstPoster(seriesName);
+                if (img) {
+                    for (let i = startingIndex; i < startingIndex + count; i++) {
+                        if (channels[i] && !channels[i].logo?.trim()) channels[i].logo = img;
+                    }
+                    saveToLocalStorage(); renderChannels(); generateM3U();
+                    statusEl.textContent = 'Poster assigned!';
+                } else { statusEl.textContent = 'No poster found on TMDB.'; }
+            } catch { statusEl.textContent = 'Error fetching poster.'; }
+            finally { setTimeout(() => { statusEl.style.display = 'none'; }, 4000); }
+        })();
+    } else {
+        setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   URL PATTERN
+════════════════════════════════════════════════════════════════ */
+function analyzeUrlPattern(url) {
+    const defs = [
+        { regex: /EP\.(\d+)/i, type: 'EP' }, { regex: /E(\d{2,})/i, type: 'E' },
+        { regex: /%20(\d{2,})/i, type: '%20' }, { regex: /episode[_-]?(\d+)/i, type: 'episode' },
+        { regex: /ep[_-]?(\d+)/i, type: 'ep' }, { regex: /s(\d+)e(\d+)/i, type: 's01e' },
+        { regex: /\.(\d+)\./i, type: 'dot' }
+    ];
+    for (const d of defs) {
+        const m = url.match(d.regex);
+        if (m) return { ...d, padding: m[1].length, match: m[0], number: parseInt(m[1]) };
+    }
+    return null;
+}
+
+function generateEpisodeUrl(baseUrl, pattern, ep) {
+    const p = String(ep).padStart(pattern.padding || 1, '0');
+    let r;
+    switch (pattern.type) {
+        case 'EP': r = `EP.${p}`; break;
+        case 'E': r = `E${p}`; break;
+        case '%20': r = `%20${p}`; break;
+        case 'episode': r = `episode${p}`; break;
+        case 'ep': r = `ep${p}`; break;
+        case 's01e': { const sm = baseUrl.match(/s(\d+)e/i); r = `s${sm ? sm[1] : '01'}e${p}`; break; }
+        case 'dot': r = `.${p}.`; break;
+        default: r = p;
+    }
+    return baseUrl.replace(pattern.match, r);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   RENDER CHANNELS
+════════════════════════════════════════════════════════════════ */
+function renderChannels() {
+    const container = document.getElementById('channelList');
+    const searchTerm = document.getElementById('searchChannel').value.toLowerCase();
+    const globalLogo = document.getElementById('globalLogo').value.trim();
+    const duplicateIndices = getDuplicateIndices();
+
+    document.getElementById('totalChannelCount').textContent = channels.length;
+    updateDuplicateWarning();
+    updatePdStats();
+    updateHomeStats();
+    updateBulkStats();
+
+    if (channels.length === 0) {
+        container.innerHTML = `<div class="text-center text-muted py-5"><i class="bi bi-inbox" style="font-size:3rem;"></i><p>No channels added yet.</p></div>`;
+        return;
+    }
+
+    const filtered = channels
+        .map((ch, i) => ({ ch, i }))
+        .filter(({ ch, i }) => {
+            const m = ch.name.toLowerCase().includes(searchTerm) ||
+                ch.url.toLowerCase().includes(searchTerm) ||
+                (ch.group && ch.group.toLowerCase().includes(searchTerm));
+            return showOnlyDuplicates ? (m && duplicateIndices.has(i)) : m;
+        });
+
+    container.innerHTML = filtered.map(({ ch, i }) => {
+        const isDupe = duplicateIndices.has(i);
+        const logo = ch.logo || globalLogo;
+
+        if (!ch.logo?.trim() && !globalLogo?.trim())
+            setTimeout(() => tmdbFetchAndAssign(ch.name, i), 60);
+        if (!ch.group?.trim() && ch.contentType === 'movie')
+            assignMovieAutoGroup(ch.name, i);
+
+        const typeBadge = ch.contentType && ch.contentType !== 'auto'
+            ? `<span class="ch-type-badge">${ch.contentType}</span>` : '';
+        const dupeBadge = isDupe
+            ? `<span class="badge badge-duplicate" style="font-size:.6rem;"><i class="bi bi-exclamation-triangle"></i></span>` : '';
+        const groupBadge = ch.group
+            ? `<span class="ch-group-badge">${ch.group}</span>` : '';
+
+        return `<div class="channel-item ${isDupe ? 'duplicate-warning' : ''}"
+                     draggable="true"
+                     data-index="${i}"
+                     onclick="onChannelItemClick(event, ${i})">
+            <div class="ch-card-inner">
+                <div class="ch-logo-wrap">
+                    ${logo
+                        ? `<img src="${logo}" onerror="this.parentElement.innerHTML='<i class=\\'bi bi-tv ch-icon-placeholder\\'></i>'">`
+                        : `<i class="bi bi-tv ch-icon-placeholder"></i>`}
+                </div>
+                <div class="ch-info">
+                    <div class="ch-name">${ch.name}</div>
+                    <div class="ch-meta">${groupBadge}${typeBadge}${dupeBadge}</div>
+                </div>
+                <div class="ch-actions" onclick="event.stopPropagation()">
+                    <button class="btn btn-sm btn-info" onclick="playChannel(${i})" title="Play"><i class="bi bi-play-fill"></i></button>
+                    <button class="btn btn-sm btn-intent" onclick="playInExternalPlayer(${i})" title="Leone Player"><i class="bi bi-cast"></i></button>
+                    <button class="btn btn-sm btn-warning" onclick="openEditChannelModal(${i})" title="Edit"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteChannel(${i})" title="Delete"><i class="bi bi-trash"></i></button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+/* click on channel body (not buttons) → open sheet */
+function onChannelItemClick(e, index) {
+    if (e.target.closest('button')) return;
+    openChannelSheet(index);
+}
+
+function filterChannels() { renderChannels(); }
+
+function updateChannelCount() {
+    document.getElementById('channelCount').textContent = `${channels.length} channels`;
+    document.getElementById('totalChannelCount').textContent = channels.length;
+}
+
+function updatePdStats() {
+    const total = channels.length;
+    const pd = channels.filter(ch => ch.url.includes('pixeldrain.com/api/file/')).length;
+    const el1 = document.getElementById('pdStatTotal');
+    const el2 = document.getElementById('pdStatPd');
+    if (el1) el1.textContent = total;
+    if (el2) el2.textContent = pd;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   EDIT / DELETE / PLAY
+════════════════════════════════════════════════════════════════ */
+function openEditChannelModal(index) {
+    const ch = channels[index];
+    document.getElementById('editChannelIndex').value = index;
+    document.getElementById('editChannelName').value = ch.name;
+    document.getElementById('editChannelUrl').value = ch.url;
+    document.getElementById('editChannelLogo').value = ch.logo || '';
+    document.getElementById('editChannelGroup').value = ch.group || '';
+    // set search query default to channel name
+    document.getElementById('editLogoSearchQuery').value = ch.name || '';
+    // reset search results
+    document.getElementById('editLogoSearchResults').style.display = 'none';
+    document.getElementById('editLogoSearchResults').innerHTML = '';
+    // preview current logo
+    previewEditLogo();
+    new bootstrap.Modal(document.getElementById('editChannelModal')).show();
+}
+
+function previewEditLogo() {
+    const url = document.getElementById('editChannelLogo').value.trim();
+    const wrap = document.getElementById('editLogoPreviewWrap');
+    const img = document.getElementById('editLogoPreview');
+    if (url) { img.src = url; wrap.style.display = 'block'; }
+    else { wrap.style.display = 'none'; }
+}
+
+function clearEditLogo() {
+    document.getElementById('editChannelLogo').value = '';
+    document.getElementById('editLogoPreviewWrap').style.display = 'none';
+}
+
+function copyEditUrl() {
+    const url = document.getElementById('editChannelUrl').value.trim();
+    if (!url) return;
+    navigator.clipboard.writeText(url)
+        .then(() => {
+            const btn = document.querySelector('#editChannelModal .btn-outline-info');
+            if (btn) { const orig = btn.innerHTML; btn.innerHTML = '<i class="bi bi-check-lg"></i>'; setTimeout(() => btn.innerHTML = orig, 1200); }
+        })
+        .catch(() => prompt('Copy URL:', url));
+}
+
+async function searchEditLogo() {
+    const query = document.getElementById('editLogoSearchQuery').value.trim();
+    const resultsEl = document.getElementById('editLogoSearchResults');
+    const btn = document.getElementById('editLogoSearchBtn');
+    if (!query) { resultsEl.innerHTML = '<p class="text-muted" style="font-size:.78rem;">Enter a search term.</p>'; resultsEl.style.display = 'block'; return; }
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    resultsEl.style.display = 'block';
+    resultsEl.innerHTML = '<p class="text-muted" style="font-size:.78rem;">Searching TMDB…</p>';
+    try {
+        const r = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&include_adult=false&page=1`);
+        if (!r.ok) throw new Error('Search failed');
+        const data = await r.json();
+        const items = (data.results || []).filter(i => i.poster_path).slice(0, 12);
+        if (!items.length) { resultsEl.innerHTML = '<p class="text-muted" style="font-size:.78rem;">No results found.</p>'; return; }
+        resultsEl.innerHTML = '<div class="logo-search-grid">' + items.map(item => {
+            const title = item.title || item.name || 'Unknown';
+            const year = (item.release_date || item.first_air_date || '').split('-')[0];
+            const posterUrl = TMDB_IMAGE_BASE + item.poster_path;
+            return `<div class="logo-search-item" onclick="selectEditLogo('${posterUrl}', this)" title="${title} ${year}">
+                <img src="${posterUrl}" loading="lazy">
+                <div class="logo-item-label">${title}${year ? ' ' + year : ''}</div>
+            </div>`;
+        }).join('') + '</div>';
+    } catch (err) {
+        resultsEl.innerHTML = `<p class="text-danger" style="font-size:.78rem;">Error: ${err.message}</p>`;
+    } finally {
+        btn.disabled = false; btn.innerHTML = '<i class="bi bi-search"></i>';
+    }
+}
+
+function selectEditLogo(url, el) {
+    document.getElementById('editChannelLogo').value = url;
+    previewEditLogo();
+    // highlight selected
+    document.querySelectorAll('#editLogoSearchResults .logo-search-item').forEach(i => i.classList.remove('selected'));
+    if (el) el.classList.add('selected');
+}
+
+function saveEditedChannel() {
+    const index = parseInt(document.getElementById('editChannelIndex').value);
+    const name = document.getElementById('editChannelName').value.trim();
+    const url = document.getElementById('editChannelUrl').value.trim();
+    const logo = document.getElementById('editChannelLogo').value.trim();
+    const group = document.getElementById('editChannelGroup').value.trim();
+    if (!name || !url) { showAlert('Error', 'Name and URL cannot be empty.'); return; }
+    channels[index] = { ...channels[index], name, url, logo, group };
+    saveToLocalStorage(); renderChannels(); generateM3U();
+    bootstrap.Modal.getInstance(document.getElementById('editChannelModal')).hide();
+    showAlert('Success', `"${name}" updated!`);
+    if (!logo) tmdbFetchAndAssign(name, index);
+    if (!group) { channels[index].contentType = detectContentTypeFromName(name); assignMovieAutoGroup(name, index); }
+}
+
+function deleteChannel(index) {
+    if (!confirm(`Delete "${channels[index].name}"?`)) return;
+    channels.splice(index, 1);
+    saveToLocalStorage(); renderChannels(); updateChannelCount(); generateM3U();
+}
+
+function playChannel(index) {
+    const ch = channels[index];
+    let url = ch.url;
+    document.getElementById('videoModalTitle').textContent = `Playing: ${ch.name}`;
+    const pdMatch = url.match(/pixeldrain\.(?:com|dev)\/u\/([a-zA-Z0-9_-]+)/);
+    if (pdMatch) url = `https://pixeldrain.com/api/file/${pdMatch[1]}`;
+    if (window.Hls && Hls.isSupported() && url.toLowerCase().endsWith('.m3u8')) {
+        const hls = new Hls(); hls.loadSource(url); hls.attachMedia(htmlVideoPlayer);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => htmlVideoPlayer.play());
+    } else { htmlVideoPlayer.src = url; htmlVideoPlayer.play(); }
+    new bootstrap.Modal(document.getElementById('videoModal')).show();
+}
+
+function playInExternalPlayer(index) {
+    const ch = channels[index];
+    let url = ch.url;
+    const pdMatch = url.match(/pixeldrain\.(?:com|dev)\/u\/([a-zA-Z0-9_-]+)/);
+    if (pdMatch) url = `https://pixeldrain.com/api/file/${pdMatch[1]}`;
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    if (isAndroid) {
+        // Create Android intent URL for Leone Player
+        const intentUrl = `intent:${url}#Intent;action=android.intent.action.VIEW;type=video/*;package=${LEONE_PLAYER_PACKAGE};S.title=${encodeURIComponent(ch.name)};end`;
+        const a = document.createElement('a');
+        a.href = intentUrl;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    } else if (isMobile) {
+        window.open(url, '_blank');
+    } else {
+        // Desktop fallback: show info about the player app
+        const playStoreUrl = 'https://play.google.com/store/apps/details?id=' + LEONE_PLAYER_PACKAGE;
+        showAlert('External Player', `This feature works on Android devices with Leone Player installed.\n\nStream URL copied to clipboard!\n\nGet Leone Player: ${playStoreUrl}`);
+        navigator.clipboard.writeText(url).catch(() => prompt('Copy URL:', url));
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   M3U GENERATE / COPY / DOWNLOAD
+════════════════════════════════════════════════════════════════ */
+function generateM3U(targetId = 'm3uOutput') {
+    if (!channels.length) { document.getElementById(targetId).value = ''; return; }
+    const gl = document.getElementById('globalLogo').value.trim();
+    const gg = document.getElementById('globalGroup').value.trim();
+    let m3u = '#EXTM3U\n';
+    channels.forEach(ch => {
+        const logo = ch.logo?.trim() || gl;
+        const group = ch.group?.trim() || gg;
+        m3u += `#EXTINF:${ch.duration || '-1'} tvg-logo="${logo}" group-title="${group}",${ch.name}\n`;
+        if (ch.vlcOpt) m3u += ch.vlcOpt + '\n';
+        m3u += ch.url + '\n';
+    });
+    document.getElementById(targetId).value = m3u;
+}
+
+function generateBulkM3U() { generateM3U('m3uBulkOutput'); showAlert('Success', 'M3U generated in Bulk Output!'); }
+
+function copyToClipboard() {
+    const v = document.getElementById('m3uOutput').value;
+    if (!v) { showAlert('Error', 'Generate M3U first!'); return; }
+    navigator.clipboard.writeText(v).then(() => showAlert('Success', 'Copied!')).catch(() => showAlert('Error', 'Copy failed'));
+}
+
+function copyBulkToClipboard() {
+    const v = document.getElementById('m3uBulkOutput').value;
+    if (!v) { showAlert('Error', 'Generate M3U first!'); return; }
+    navigator.clipboard.writeText(v).then(() => showAlert('Success', 'Copied!')).catch(() => showAlert('Error', 'Copy failed'));
+}
+
+function downloadM3U() {
+    if (!document.getElementById('m3uOutput').value) generateM3U();
+    if (!document.getElementById('m3uOutput').value) { showAlert('Error', 'No channels!'); return; }
+    pendingDownloadSource = 'home';
+    document.getElementById('downloadFilename').value = 'playlist';
+    new bootstrap.Modal(document.getElementById('downloadFilenameModal')).show();
+}
+
+function downloadBulkM3U() {
+    if (!document.getElementById('m3uBulkOutput').value) generateM3U('m3uBulkOutput');
+    if (!document.getElementById('m3uBulkOutput').value) { showAlert('Error', 'No channels!'); return; }
+    pendingDownloadSource = 'bulk';
+    document.getElementById('downloadFilename').value = 'playlist';
+    new bootstrap.Modal(document.getElementById('downloadFilenameModal')).show();
+}
+
+function confirmDownload() {
+    let fn = document.getElementById('downloadFilename').value.trim() || 'playlist';
+    fn = fn.replace(/\.m3u$/i, '');
+    const id = pendingDownloadSource === 'bulk' ? 'm3uBulkOutput' : 'm3uOutput';
+    const content = document.getElementById(id).value;
+    if (!content) { showAlert('Error', 'No M3U content!'); return; }
+    const blob = new Blob([content], { type: 'audio/x-mpegurl' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = fn + '.m3u';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    bootstrap.Modal.getInstance(document.getElementById('downloadFilenameModal')).hide();
+    showAlert('Success', `Downloaded "${fn}.m3u"!`);
+    pendingDownloadSource = null;
+}
+
+function downloadHomeJSON() {
+    if (!channels.length) { showAlert('Error', 'No channels to export!'); return; }
+    const data = JSON.stringify(channels, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'channels.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+}
+
+function clearCurrent() {
+    if (!confirm('Clear all channels?')) return;
+    channels = [];
+    document.getElementById('globalLogo').value = '';
+    document.getElementById('globalGroup').value = '';
+    saveToLocalStorage(); renderChannels(); updateChannelCount();
+    document.getElementById('m3uOutput').value = '';
+    document.getElementById('m3uBulkOutput').value = '';
+    showAlert('Success', 'Playlist cleared!');
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PIXELDRAIN IMPORT (now from offcanvas)
+════════════════════════════════════════════════════════════════ */
+function savePdApiKey() {
+    const key = document.getElementById('pdApiKey').value.trim();
+    localStorage.setItem('pdApiKey', key);
+    showAlert('Saved', key ? 'API key saved!' : 'API key cleared.');
+}
+
+function getPdHeaders() {
+    const key = localStorage.getItem('pdApiKey') || '';
+    if (!key) return {};
+    return { 'Authorization': 'Basic ' + btoa(':' + key) };
+}
+
+function pdTypeOk(mimeType, name) {
+    const filter = document.getElementById('pdTypeFilter').value;
+    if (filter === 'all') return isVideoFile(mimeType) || (name && name.toLowerCase().endsWith('.m3u8'));
+    if (filter === 'mp4') return mimeType?.includes('mp4') || name?.toLowerCase().endsWith('.mp4');
+    if (filter === 'mkv') return mimeType?.includes('matroska') || name?.toLowerCase().endsWith('.mkv');
+    if (filter === 'm3u8') return mimeType?.includes('mpegurl') || name?.toLowerCase().endsWith('.m3u8');
+    return false;
+}
+
+async function importFromPixeldrain() {
+    const url = document.getElementById('pixeldrainUrl').value.trim();
+    if (!url) { showAlert('Error', 'Please enter a Pixeldrain URL'); return; }
+    const listMatch = url.match(/pixeldrain\.(?:com|dev)\/l\/([a-zA-Z0-9_-]+)/);
+    const fileMatch = url.match(/pixeldrain\.(?:com|dev)\/u\/([a-zA-Z0-9_-]+)/);
+    if (listMatch) await importPixeldrainList(listMatch[1]);
+    else if (fileMatch) await importPixeldrainFile(fileMatch[1]);
+    else showAlert('Error', 'Invalid Pixeldrain URL format.');
+}
+
+function setPixeldrainLoading(loading, text = '') {
+    const btn = document.getElementById('pixeldrainImportBtn');
+    const status = document.getElementById('pixeldrainStatus');
+    btn.disabled = loading;
+    btn.innerHTML = loading
+        ? `<span class="spinner-border spinner-border-sm"></span> ${text || 'Importing…'}`
+        : `<i class="bi bi-cloud-download"></i> Auto-Import from Pixeldrain`;
+    if (text) { status.style.display = 'block'; status.textContent = text; }
+    if (!loading && text) setTimeout(() => { status.style.display = 'none'; }, 3500);
+    if (!loading && !text) status.style.display = 'none';
+}
+
+async function importPixeldrainList(listId) {
+    let count = 0;
+    try {
+        setPixeldrainLoading(true, 'Fetching list…');
+        const resp = await fetch(`https://pixeldrain.com/api/list/${listId}`, { headers: getPdHeaders() });
+        if (!resp.ok) throw new Error('List fetch failed');
+        const data = await resp.json();
+        if (!data.success || !data.files?.length) { setPixeldrainLoading(false); showAlert('Error', 'No files in list'); return; }
+        const group = document.getElementById('pixeldrainImportGroup').value.trim() || data.title || 'Pixeldrain List';
+        setPixeldrainLoading(true, `Fetching info for ${data.files.length} files…`);
+        const settled = await Promise.allSettled(data.files.map(f => f?.id
+            ? fetchPixeldrainFileInfo(f.id).then(info => ({ id: f.id, info })).catch(() => ({ id: f.id, info: null }))
+            : Promise.resolve({ id: null, info: null })
+        ));
+        const useThumbnail = document.getElementById('pdUseThumbnail').checked;
+        const fetchTmdb = document.getElementById('pdFetchTmdb').checked;
+        for (const p of settled) {
+            if (p.status !== 'fulfilled' || !p.value?.info) continue;
+            const { id, info } = p.value;
+            if (!pdTypeOk(info.mime_type, info.name)) continue;
+            const logo = useThumbnail ? `https://pixeldrain.com/api/file/${id}/thumbnail` : '';
+            const idx = channels.push({ name: info.name, url: `https://pixeldrain.com/api/file/${id}`, logo, group, duration: '-1', vlcOpt: '', contentType: 'auto' }) - 1;
+            if (!logo && fetchTmdb) tmdbFetchAndAssign(info.name, idx);
+            count++;
+        }
+        saveToLocalStorage(); renderChannels(); updateChannelCount(); generateM3U();
+        document.getElementById('pixeldrainUrl').value = '';
+        document.getElementById('pixeldrainImportGroup').value = '';
+        setPixeldrainLoading(false, `Imported ${count} video file(s)!`);
+        showAlert('Success', `Imported ${count} file(s) from list "${group}"!`);
+    } catch (err) { setPixeldrainLoading(false); showAlert('Error', 'Pixeldrain import failed: ' + err.message); }
+}
+
+async function importPixeldrainFile(fileId) {
+    try {
+        setPixeldrainLoading(true, 'Fetching file info…');
+        const info = await fetchPixeldrainFileInfo(fileId);
+        if (!info) { setPixeldrainLoading(false); showAlert('Error', 'Could not fetch file info'); return; }
+        if (!pdTypeOk(info.mime_type, info.name)) { setPixeldrainLoading(false); showAlert('Error', `"${info.name}" is not a supported video file.`); return; }
+        const group = document.getElementById('pixeldrainImportGroup').value.trim() || info.name.replace(/\.[^.]+$/, '') || 'Pixeldrain';
+        const useThumbnail = document.getElementById('pdUseThumbnail').checked;
+        const fetchTmdb = document.getElementById('pdFetchTmdb').checked;
+        const logo = useThumbnail ? `https://pixeldrain.com/api/file/${fileId}/thumbnail` : '';
+        const idx = channels.push({ name: info.name, url: `https://pixeldrain.com/api/file/${fileId}`, logo, group, duration: '-1', vlcOpt: '', contentType: 'auto' }) - 1;
+        if (!logo && fetchTmdb) tmdbFetchAndAssign(info.name, idx);
+        saveToLocalStorage(); renderChannels(); updateChannelCount(); generateM3U();
+        document.getElementById('pixeldrainUrl').value = '';
+        document.getElementById('pixeldrainImportGroup').value = '';
+        setPixeldrainLoading(false, `Imported "${info.name}"!`);
+        showAlert('Success', `Imported "${info.name}"!`);
+    } catch (err) { setPixeldrainLoading(false); showAlert('Error', 'Pixeldrain import failed: ' + err.message); }
+}
+
+/* Single pixeldrain file import from Home page Add Channel */
+async function importPixeldrainSingle(fileId, overrideName) {
+    try {
+        const info = await fetchPixeldrainFileInfo(fileId);
+        if (!info) { showAlert('Error', 'Could not fetch Pixeldrain file info'); return; }
+        const globalLogo = document.getElementById('globalLogo').value.trim();
+        const globalGroup = document.getElementById('globalGroup').value.trim();
+        const channelName = overrideName?.trim() || info.name || 'Pixeldrain File';
+        const logo = `https://pixeldrain.com/api/file/${fileId}/thumbnail`;
+        const streamUrl = `https://pixeldrain.com/api/file/${fileId}`;
+        const idx = channels.push({ name: channelName, url: streamUrl, logo: logo || globalLogo || '', group: globalGroup || '', duration: '-1', vlcOpt: '', contentType: 'auto' }) - 1;
+        saveToLocalStorage(); renderChannels(); updateChannelCount(); generateM3U();
+        showAlert('Success', `Imported "${channelName}"!`);
+        if (!logo) tmdbFetchAndAssign(channelName, idx);
+    } catch (err) { showAlert('Error', 'Import failed: ' + err.message); }
+}
+
+/* Bulk File IDs import */
+async function importPixeldrainBulkIds() {
+    const raw = document.getElementById('pdBulkIds').value.trim();
+    const group = document.getElementById('pdBulkGroup').value.trim() || 'Pixeldrain';
+    const statusEl = document.getElementById('pdBulkStatus');
+    if (!raw) { statusEl.textContent = 'Please paste at least one file ID.'; return; }
+    const ids = raw.split('\n').map(l => l.trim()).filter(Boolean);
+    statusEl.textContent = `Fetching info for ${ids.length} IDs…`;
+    let count = 0;
+    const useThumbnail = document.getElementById('pdUseThumbnail').checked;
+    const fetchTmdb = document.getElementById('pdFetchTmdb').checked;
+    for (const id of ids) {
+        const info = await fetchPixeldrainFileInfo(id);
+        if (!info || !pdTypeOk(info.mime_type, info.name)) continue;
+        const logo = useThumbnail ? `https://pixeldrain.com/api/file/${id}/thumbnail` : '';
+        const idx = channels.push({ name: info.name, url: `https://pixeldrain.com/api/file/${id}`, logo, group, duration: '-1', vlcOpt: '', contentType: 'auto' }) - 1;
+        if (!logo && fetchTmdb) tmdbFetchAndAssign(info.name, idx);
+        count++;
+    }
+    saveToLocalStorage(); renderChannels(); updateChannelCount(); generateM3U();
+    document.getElementById('pdBulkIds').value = '';
+    document.getElementById('pdBulkGroup').value = '';
+    statusEl.textContent = `Imported ${count} / ${ids.length} file(s)!`;
+}
+
+async function fetchPixeldrainFileInfo(fileId) {
+    try {
+        const r = await fetch(`https://pixeldrain.com/api/file/${fileId}/info`, { headers: getPdHeaders() });
+        if (!r.ok) return null;
+        const d = await r.json();
+        return d.success ? d : null;
+    } catch { return null; }
+}
+
+function isVideoFile(mime) {
+    if (!mime) return false;
+    const m = mime.toLowerCase();
+    return m.startsWith('video/') || m.includes('mpegurl') || m.includes('mp4') || m.includes('x-matroska');
+}
+
+/* ════════════════════════════════════════════════════════════════
+   FETCH FROM LINK
+════════════════════════════════════════════════════════════════ */
+async function fetchFromLink() {
+    const url = document.getElementById('fetchLinkUrl').value.trim();
+    const statusEl = document.getElementById('fetchLinkStatus');
+    const btn = document.getElementById('fetchLinkBtn');
+    if (!url) { showAlert('Error', 'Please enter a URL'); return; }
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Fetching…';
+    statusEl.style.display = 'block'; statusEl.textContent = 'Fetching playlist…';
+    try {
+        let content = null;
+        for (const proxy of ['', 'https://api.allorigins.win/raw?url=', 'https://corsproxy.io/?', 'https://api.codetabs.com/v1/proxy?quest=']) {
+            try {
+                const fetchUrl = proxy ? proxy + encodeURIComponent(url) : url;
+                const r = await fetch(fetchUrl, { headers: { 'Accept': 'text/plain, application/x-mpegurl, */*' } });
+                if (r.ok) { content = await r.text(); if (content?.trim()) break; }
+            } catch {}
+        }
+        if (!content) throw new Error('Could not fetch content.');
+        const n = parseM3U(content);
+        document.getElementById('fetchLinkUrl').value = '';
+        statusEl.textContent = `Imported ${n} channel(s)!`;
+        showAlert('Success', `Imported ${n} channels!`);
+    } catch (err) {
+        statusEl.textContent = 'Error: ' + err.message;
+        showAlert('Error', err.message);
+    } finally {
+        btn.disabled = false; btn.innerHTML = '<i class="bi bi-cloud-download"></i> Fetch & Import';
+        setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
+    }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   M3U IMPORT
+════════════════════════════════════════════════════════════════ */
+function importM3U() {
+    const file = document.getElementById('m3uFileInput').files[0];
+    if (!file) { showAlert('Error', 'Select an M3U/TXT file'); return; }
+    const reader = new FileReader();
+    reader.onload = e => { const n = parseM3U(e.target.result); showAlert('Success', `Imported ${n} channels!`); };
+    reader.readAsText(file);
+}
+
+function importM3UFromPaste() {
+    const content = document.getElementById('m3uPasteInput').value;
+    if (!content.trim()) { showAlert('Error', 'Please paste M3U content'); return; }
+    const n = parseM3U(content);
+    document.getElementById('m3uPasteInput').value = '';
+    showAlert('Success', `Imported ${n} channels!`);
+}
+
+function parseM3U(content) {
+    const lines = content.split('\n');
+    let imported = 0;
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line.startsWith('#EXTINF')) continue;
+        const em = line.match(/^#EXTINF:([^,]+),(.*)/);
+        const duration = em ? em[1] : '-1';
+        const name = em ? em[2].trim() : 'Unnamed';
+        const logo = (line.match(/tvg-logo="([^"]*)"/) || [])[1] || '';
+        const group = (line.match(/group-title="([^"]*)"/) || [])[1] || '';
+        let url = '', vlcOpt = '';
+        let j = i + 1;
+        while (j < lines.length) {
+            const nl = lines[j].trim();
+            if (nl.startsWith('#EXTVLCOPT:')) { vlcOpt = nl; j++; continue; }
+            if (nl && !nl.startsWith('#')) { url = nl; i = j; break; }
+            if (nl.startsWith('#EXTINF') || nl.startsWith('#EXTM3U')) break;
+            j++;
+        }
+        if (url) {
+            const idx = channels.push({ name, url, logo, group, duration, vlcOpt, contentType: 'auto' }) - 1;
+            imported++;
+            if (!logo) { assignMovieAutoGroup(name, idx); tmdbFetchAndAssign(name, idx); }
+        } else i = j - 1;
+    }
+    saveToLocalStorage(); renderChannels(); updateChannelCount(); generateM3U();
+    return imported;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   CSV IMPORT
+════════════════════════════════════════════════════════════════ */
+function importCSV() {
+    const file = document.getElementById('csvFileInput').files[0];
+    if (!file) { showAlert('Error', 'Select a CSV file'); return; }
+    Papa.parse(file, {
+        header: true,
+        complete: r => { csvData = r; showCsvMappingModal(r.meta.fields); },
+        error: e => showAlert('Error', 'CSV parse failed: ' + e.message)
+    });
+}
+function showCsvMappingModal(cols) {
+    const opts = '<option value="">-- None --</option>' + cols.map(c => `<option value="${c}">${c}</option>`).join('');
+    ['csvNameCol', 'csvUrlCol', 'csvLogoCol', 'csvGroupCol'].forEach(id => document.getElementById(id).innerHTML = opts);
+    new bootstrap.Modal(document.getElementById('csvMapModal')).show();
+}
+function processCsvImport() {
+    const nc = document.getElementById('csvNameCol').value, uc = document.getElementById('csvUrlCol').value;
+    const lc = document.getElementById('csvLogoCol').value, gc = document.getElementById('csvGroupCol').value;
+    if (!nc || !uc) { showAlert('Error', 'Select Name and URL columns'); return; }
+    let n = 0;
+    csvData.data.forEach(row => {
+        if (!row[nc] || !row[uc]) return;
+        const idx = channels.push({ name: row[nc], url: row[uc], logo: lc ? row[lc] || '' : '', group: gc ? row[gc] || '' : '', duration: '-1', vlcOpt: '', contentType: 'auto' }) - 1;
+        n++;
+        if (!lc || !row[lc]) { tmdbFetchAndAssign(row[nc], idx); assignMovieAutoGroup(row[nc], idx); }
+    });
+    saveToLocalStorage(); renderChannels(); updateChannelCount(); generateM3U();
+    bootstrap.Modal.getInstance(document.getElementById('csvMapModal')).hide();
+    showAlert('Success', `Imported ${n} channels!`);
+    document.getElementById('csvFileInput').value = '';
+}
+
+/* ════════════════════════════════════════════════════════════════
+   BULK OPS
+════════════════════════════════════════════════════════════════ */
+function applyBulkNames() {
+    const names = document.getElementById('bulkNames').value.split('\n').map(n => n.trim()).filter(Boolean);
+    if (!names.length) { showAlert('Error', 'Enter at least one name'); return; }
+    const c = Math.min(names.length, channels.length);
+    for (let i = 0; i < c; i++) channels[i].name = names[i];
+    saveToLocalStorage(); renderChannels(); generateM3U();
+    showAlert('Success', `Applied names to ${c} channels!`);
+}
+
+function applyBulkLogoGroup() {
+    const logo = document.getElementById('bulkLogo').value.trim();
+    const group = document.getElementById('bulkGroup').value.trim();
+    if (!logo && !group) { showAlert('Error', 'Provide at least logo or group'); return; }
+    if (!channels.length) { showAlert('Error', 'No channels to update!'); return; }
+    for (let i = 0; i < channels.length; i++) {
+        if (logo) channels[i].logo = logo;
+        if (group) channels[i].group = group;
+    }
+    saveToLocalStorage(); renderChannels(); generateM3U(); generateM3U('m3uBulkOutput');
+    showAlert('Success', `Applied to all ${channels.length} channels!`);
+}
+
+function updateEpisodeRange() {
+    const start = parseInt(document.getElementById('rangeStart').value);
+    const end = parseInt(document.getElementById('rangeEnd').value);
+    const prefix = document.getElementById('rangePrefix').value.trim();
+    if (!prefix) { showAlert('Error', 'Provide episode prefix'); return; }
+    if (start < 1 || end < start || end > channels.length) { showAlert('Error', `Invalid range (1–${channels.length})`); return; }
+    const pattern = analyzeUrlPattern(channels[start - 1].url);
+    if (!pattern) { showAlert('Error', 'No episode pattern in start URL'); return; }
+    let ep = pattern.number;
+    for (let i = start - 1; i < end; i++) {
+        channels[i].url = generateEpisodeUrl(channels[start - 1].url, pattern, ep);
+        channels[i].name = `${prefix}${ep}`;
+        ep++;
+    }
+    saveToLocalStorage(); renderChannels(); generateM3U();
+    showAlert('Success', `Updated ${end - start + 1} episodes!`);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   BULK EDIT — NEW PRO FEATURES
+════════════════════════════════════════════════════════════════ */
+
+/* ── Stats ── */
+function updateHomeStats() {
+    const t = document.getElementById('homeStatTotal');
+    const g = document.getElementById('homeStatGroups');
+    const d = document.getElementById('homeStatDupes');
+    if (t) t.textContent = channels.length;
+    if (g) g.textContent = new Set(channels.map(c => c.group?.trim()).filter(Boolean)).size;
+    if (d) d.textContent = getDuplicateIndices().size;
+}
+
+function updateBulkStats() {
+    const el = document.getElementById('bulkStatTotal');
+    if (!el) return;
+    el.textContent = channels.length;
+    const groups = new Set(channels.map(c => c.group?.trim()).filter(Boolean));
+    document.getElementById('bulkStatGroups').textContent = groups.size;
+    document.getElementById('bulkStatDupes').textContent = getDuplicateIndices().size;
+    document.getElementById('bulkStatNoLogo').textContent = channels.filter(c => !c.logo?.trim()).length;
+    document.getElementById('bulkStatPd').textContent = channels.filter(c => c.url.includes('pixeldrain.com/api/file/')).length;
+}
+
+/* ── Find & Replace ── */
+function bulkFindReplace(apply) {
+    const field = document.getElementById('fnrField').value;
+    const findVal = document.getElementById('fnrFind').value;
+    const replaceVal = document.getElementById('fnrReplace').value;
+    const useRegex = document.getElementById('fnrRegex').checked;
+    const statusEl = document.getElementById('fnrStatus');
+    if (!findVal) { statusEl.textContent = 'Enter text to find.'; return; }
+    let count = 0;
+    let regex;
+    try { regex = useRegex ? new RegExp(findVal, 'gi') : null; } catch (e) { statusEl.textContent = 'Invalid regex: ' + e.message; return; }
+    channels.forEach(ch => {
+        const val = ch[field] || '';
+        const hasMatch = useRegex ? regex.test(val) : val.toLowerCase().includes(findVal.toLowerCase());
+        if (hasMatch) {
+            count++;
+            if (apply) {
+                if (useRegex) { regex.lastIndex = 0; ch[field] = val.replace(regex, replaceVal); }
+                else ch[field] = val.split(findVal).join(replaceVal);
+            }
+        }
+        if (useRegex) regex.lastIndex = 0;
+    });
+    if (apply) {
+        saveToLocalStorage(); renderChannels(); generateM3U();
+        statusEl.textContent = `Replaced in ${count} channel(s).`;
+    } else {
+        statusEl.textContent = `Found ${count} match(es).`;
+        document.getElementById('fnrPreviewCount').textContent = count ? `(${count})` : '';
+    }
+}
+
+/* ── Sort & Order ── */
+function bulkSort(mode) {
+    if (!channels.length) { showAlert('Error', 'No channels to sort!'); return; }
+    switch (mode) {
+        case 'name-asc': channels.sort((a, b) => a.name.localeCompare(b.name)); break;
+        case 'name-desc': channels.sort((a, b) => b.name.localeCompare(a.name)); break;
+        case 'group-asc': channels.sort((a, b) => (a.group || '').localeCompare(b.group || '')); break;
+        case 'shuffle':
+            for (let i = channels.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [channels[i], channels[j]] = [channels[j], channels[i]];
+            } break;
+        case 'reverse': channels.reverse(); break;
+    }
+    saveToLocalStorage(); renderChannels(); generateM3U();
+    showAlert('Success', `Channels sorted: ${mode}`);
+}
+
+/* ── Cleanup Tools ── */
+function bulkCleanNames() {
+    if (!channels.length) { showAlert('Error', 'No channels!'); return; }
+    let count = 0;
+    channels.forEach(ch => {
+        const cleaned = ch.name
+            .replace(/\.(mp4|mkv|avi|mov|m3u8|ts|flv|wmv|webm|mpg|mpeg)$/i, '')
+            .replace(/\[.*?\]/g, '')
+            .replace(/\{.*?\}/g, '')
+            .replace(/\s{2,}/g, ' ')
+            .replace(/[._]/g, ' ')
+            .trim();
+        if (cleaned !== ch.name) { ch.name = cleaned; count++; }
+    });
+    saveToLocalStorage(); renderChannels(); generateM3U();
+    showAlert('Success', `Cleaned ${count} channel name(s).`);
+}
+
+function bulkTrimWhitespace() {
+    if (!channels.length) { showAlert('Error', 'No channels!'); return; }
+    channels.forEach(ch => {
+        ch.name = ch.name?.trim() || ch.name;
+        ch.url = ch.url?.trim() || ch.url;
+        ch.logo = ch.logo?.trim() || '';
+        ch.group = ch.group?.trim() || '';
+    });
+    saveToLocalStorage(); renderChannels(); generateM3U();
+    showAlert('Success', 'Trimmed whitespace from all fields.');
+}
+
+function bulkRemoveNoUrl() {
+    const before = channels.length;
+    channels = channels.filter(ch => ch.url?.trim());
+    const removed = before - channels.length;
+    if (!removed) { showAlert('Info', 'All channels have URLs.'); return; }
+    saveToLocalStorage(); renderChannels(); updateChannelCount(); generateM3U();
+    showAlert('Success', `Removed ${removed} channel(s) with no URL.`);
+}
+
+/* ── Batch URL Builder ── */
+function batchUrlPreview() {
+    const base = document.getElementById('batchBaseUrl').value.trim();
+    const prefix = document.getElementById('batchPrefix').value;
+    const ext = document.getElementById('batchExt').value;
+    const from = parseInt(document.getElementById('batchFrom').value) || 1;
+    const pad = parseInt(document.getElementById('batchPad').value) || 1;
+    const num = String(from).padStart(pad, '0');
+    const preview = base ? `${base}/${prefix}${num}${ext}` : '…';
+    document.getElementById('batchPreview').textContent = preview;
+}
+// attach live preview
+document.addEventListener('DOMContentLoaded', () => {
+    ['batchBaseUrl','batchPrefix','batchExt','batchFrom','batchPad'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', batchUrlPreview);
+    });
+});
+
+function batchUrlGenerate() {
+    const base = document.getElementById('batchBaseUrl').value.trim();
+    const prefix = document.getElementById('batchPrefix').value;
+    const ext = document.getElementById('batchExt').value;
+    const from = parseInt(document.getElementById('batchFrom').value) || 1;
+    const to = parseInt(document.getElementById('batchTo').value) || 10;
+    const pad = parseInt(document.getElementById('batchPad').value) || 1;
+    if (!base) { showAlert('Error', 'Provide base URL.'); return; }
+    if (to < from) { showAlert('Error', 'To must be >= From.'); return; }
+    const globalLogo = document.getElementById('globalLogo')?.value.trim() || '';
+    const globalGroup = document.getElementById('globalGroup')?.value.trim() || '';
+    let count = 0;
+    for (let i = from; i <= to; i++) {
+        const num = String(i).padStart(pad, '0');
+        const url = `${base}/${prefix}${num}${ext}`;
+        const name = `${prefix}${num}`;
+        channels.push({ name, url, logo: globalLogo, group: globalGroup, duration: '-1', vlcOpt: '', contentType: 'auto' });
+        count++;
+    }
+    saveToLocalStorage(); renderChannels(); updateChannelCount(); generateM3U();
+    showAlert('Success', `Generated ${count} channels!`);
+}
+
+/* ── Export Formats ── */
+function exportAsJSON() {
+    if (!channels.length) { showAlert('Error', 'No channels!'); return; }
+    const data = JSON.stringify(channels, null, 2);
+    downloadBlob(data, 'channels.json', 'application/json');
+}
+
+function exportAsCSV() {
+    if (!channels.length) { showAlert('Error', 'No channels!'); return; }
+    let csv = 'Name,URL,Logo,Group\n';
+    channels.forEach(ch => {
+        csv += `"${(ch.name||'').replace(/"/g,'""')}","${(ch.url||'').replace(/"/g,'""')}","${(ch.logo||'').replace(/"/g,'""')}","${(ch.group||'').replace(/"/g,'""')}"\n`;
+    });
+    downloadBlob(csv, 'channels.csv', 'text/csv');
+}
+
+function exportAsTXT() {
+    if (!channels.length) { showAlert('Error', 'No channels!'); return; }
+    const txt = channels.map(ch => ch.url).join('\n');
+    downloadBlob(txt, 'urls.txt', 'text/plain');
+}
+
+function downloadBlob(content, filename, mime) {
+    const blob = new Blob([content], { type: mime });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   SAVE / LOAD PLAYLISTS
+════════════════════════════════════════════════════════════════ */
+function savePlaylist() {
+    if (!channels.length) { showAlert('Error', 'No channels to save'); return; }
+    new bootstrap.Modal(document.getElementById('savePlaylistModal')).show();
+}
+function confirmSavePlaylist() {
+    const name = document.getElementById('playlistName').value.trim();
+    if (!name) { showAlert('Error', 'Enter a playlist name'); return; }
+    const lists = JSON.parse(localStorage.getItem('savedPlaylists') || '[]');
+    lists.push({ name, channels: [...channels], date: new Date().toISOString() });
+    localStorage.setItem('savedPlaylists', JSON.stringify(lists));
+    bootstrap.Modal.getInstance(document.getElementById('savePlaylistModal')).hide();
+    document.getElementById('playlistName').value = '';
+    showAlert('Success', `"${name}" saved!`);
+}
+
+function renderSavedPlaylists() {
+    const lists = JSON.parse(localStorage.getItem('savedPlaylists') || '[]');
+    const el = document.getElementById('savedPlaylistsList');
+    const statEl = document.getElementById('savedStatCount');
+    if (statEl) statEl.textContent = lists.length;
+    if (!lists.length) { el.innerHTML = `<div class="text-center text-muted py-4"><i class="bi bi-folder-x" style="font-size:2.2rem;"></i><p style="font-size:.85rem;">No saved playlists yet.</p></div>`; return; }
+    el.innerHTML = lists.map((pl, i) => `
+        <div class="channel-item" style="cursor:default;">
+            <div class="ch-card-inner">
+                <div class="ch-logo-wrap" style="background:rgba(25,135,84,.15);border-color:rgba(25,135,84,.3);">
+                    <i class="bi bi-collection-play ch-icon-placeholder" style="color:#6bcb77;"></i>
+                </div>
+                <div class="ch-info">
+                    <div class="ch-name">${pl.name}</div>
+                    <div class="ch-meta">
+                        <span class="ch-group-badge">${pl.channels.length} channels</span>
+                        <span class="ch-type-badge">${new Date(pl.date).toLocaleDateString()}</span>
+                    </div>
+                </div>
+                <div class="ch-actions">
+                    <button class="btn btn-sm btn-success" onclick="loadPlaylist(${i})" title="Load"><i class="bi bi-box-arrow-in-down"></i></button>
+                    <button class="btn btn-sm btn-info" onclick="exportPlaylist(${i})" title="Export"><i class="bi bi-download"></i></button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteSavedPlaylist(${i})" title="Delete"><i class="bi bi-trash"></i></button>
+                </div>
+            </div>
+        </div>`).join('');
+}
+
+function loadPlaylist(i) {
+    const lists = JSON.parse(localStorage.getItem('savedPlaylists') || '[]');
+    if (channels.length && !confirm(`Load "${lists[i].name}"? Current playlist will be replaced.`)) return;
+    channels = [...lists[i].channels];
+    saveToLocalStorage(); renderChannels(); updateChannelCount(); generateM3U();
+    document.querySelector('.nav-link[data-view="home"]').click();
+    showAlert('Success', `Loaded "${lists[i].name}"!`);
+}
+
+function exportPlaylist(i) {
+    const pl = JSON.parse(localStorage.getItem('savedPlaylists') || '[]')[i];
+    let m3u = '#EXTM3U\n';
+    pl.channels.forEach(ch => {
+        m3u += `#EXTINF:${ch.duration || '-1'} tvg-logo="${ch.logo || ''}" group-title="${ch.group || ''}",${ch.name}\n`;
+        if (ch.vlcOpt) m3u += ch.vlcOpt + '\n';
+        m3u += ch.url + '\n';
+    });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([m3u], { type: 'audio/x-mpegurl' }));
+    a.download = pl.name + '.m3u';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+function deleteSavedPlaylist(i) {
+    const lists = JSON.parse(localStorage.getItem('savedPlaylists') || '[]');
+    if (!confirm(`Delete "${lists[i].name}"?`)) return;
+    lists.splice(i, 1);
+    localStorage.setItem('savedPlaylists', JSON.stringify(lists));
+    renderSavedPlaylists();
+}
+
+/* ════════════════════════════════════════════════════════════════
+   LOCALSTORAGE
+════════════════════════════════════════════════════════════════ */
+function saveToLocalStorage() {
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({
+        channels,
+        globalLogo: document.getElementById('globalLogo').value.trim(),
+        globalGroup: document.getElementById('globalGroup').value.trim(),
+        notificationSetting: document.getElementById('notificationSetting')?.value || 'all'
+    }));
+}
+
+function loadFromLocalStorage() {
+    const saved = localStorage.getItem(SESSION_STORAGE_KEY);
+    if (!saved) return;
+    try {
+        const d = JSON.parse(saved);
+        if (d.channels) channels = d.channels.map(ch => ({ duration: '-1', vlcOpt: '', contentType: 'auto', ...ch }));
+        if (d.globalLogo != null) document.getElementById('globalLogo').value = d.globalLogo;
+        if (d.globalGroup != null) document.getElementById('globalGroup').value = d.globalGroup;
+        if (d.notificationSetting) document.getElementById('notificationSetting').value = d.notificationSetting;
+    } catch { localStorage.removeItem(SESSION_STORAGE_KEY); }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   ALERT
+════════════════════════════════════════════════════════════════ */
+function showAlert(title, message) {
+    const s = document.getElementById('notificationSetting')?.value || 'all';
+    if (s === 'none') return;
+    if (s === 'errors' && !title.toLowerCase().includes('error') && !title.toLowerCase().includes('warning')) return;
+    document.getElementById('alertModalTitle').textContent = title;
+    document.getElementById('alertModalBody').textContent = message;
+    new bootstrap.Modal(document.getElementById('alertModal')).show();
+}
+</script>
+</body>
+</html>
